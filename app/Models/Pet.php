@@ -24,6 +24,13 @@ class Pet extends Model
     protected $primaryKey = 'idpet';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -35,6 +42,15 @@ class Pet extends Model
         'jenis_kelamin',
         'idpemilik',
         'idras_hewan',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'tanggal_lahir' => 'date',
     ];
 
     /**
@@ -51,5 +67,21 @@ class Pet extends Model
     public function rasHewan()
     {
         return $this->belongsTo(RasHewan::class, 'idras_hewan', 'idras_hewan');
+    }
+
+    /**
+     * Get the temu dokter for the pet.
+     */
+    public function temuDokter()
+    {
+        return $this->hasMany(TemuDokter::class, 'idpet', 'idpet');
+    }
+
+    /**
+     * Get the rekam medis for the pet.
+     */
+    public function rekamMedis()
+    {
+        return $this->hasManyThrough(RekamMedis::class, TemuDokter::class, 'idpet', 'idreservasi_dokter', 'idpet', 'idreservasi_dokter');
     }
 }

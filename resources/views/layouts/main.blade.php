@@ -24,10 +24,11 @@
                 <li><a href="{{ url('/struktur') }}">Struktur Organisasi</a></li>
                 <li><a href="{{ url('/layanan') }}">Layanan Umum</a></li>
                 <li><a href="{{ url('/visimisi') }}">Visi Misi & Tujuan</a></li>
-                <li><a href="{{ url('/login') }}">Login</a></li>
+            </ul>
+            <ul>
+                <li><a href="{{ route('login') }}">Login</a></li>
             </ul>
         </nav>
-
         <main class="main-content">
             @yield('content')
         </main>
