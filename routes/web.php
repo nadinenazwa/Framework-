@@ -17,6 +17,10 @@ use App\Http\Controllers\Resepsionis\PemilikResepsionisController;
 use App\Http\Controllers\Resepsionis\PetResepsionisController;
 use App\Http\Controllers\Resepsionis\TemuDokterController;
 use App\Http\Controllers\Dokter\DashboardDokterController;
+use App\Http\Controllers\Perawat\DashboardPerawatController;
+use App\Http\Controllers\Perawat\AntrianController;
+use App\Http\Controllers\Perawat\PasienController;
+use App\Http\Controllers\Pemilik\DashboardPemilikController;
 
 Route::get('/cek-koneksi', [SiteController::class, 'cekKoneksi'])->name('cek_koneksi');
 
@@ -85,13 +89,31 @@ Route::prefix('dokter')->middleware(['auth'])->group(function () {
 
 // Perawat routes
 Route::prefix('perawat')->middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('perawat.dashboard');
-    })->name('perawat.dashboard');
-    Route::resource('pet', PetController::class, ['as' => 'perawat']);
+    
+    // Rute untuk halaman dashboard utama (dengan kartu)
+    Route::get('/dashboard', [DashboardPerawatController::class, 'index'])
+         ->name('perawat.dashboard');
+
+    // Rute untuk "Daftar Semua Temu Dokter"
+    Route::get('/antrian', [AntrianController::class, 'index'])
+         ->name('perawat.antrian.index');
+
+    // Rute untuk "Daftar Semua Pasien" (untuk melihat rekam medis)
+    Route::get('/pasien', [PasienController::class, 'index'])
+         ->name('perawat.pasien.index');
+
+    // Rute untuk "Detail Rekam Medis" per pasien
+    Route::get('/pasien/{pet}', [PasienController::class, 'show'])
+         ->name('perawat.pasien.show');
 }); 
 // Pemilik routes
 Route::prefix('pemilik')->middleware(['auth'])->group(function () {
-});
+    
+    // Rute untuk halaman dashboard utama (menampilkan daftar pet milik pemilik)
+    Route::get('/dashboard', [DashboardPemilikController::class, 'index'])
+         ->name('pemilik.dashboard');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    // Rute untuk melihat riwayat rekam medis satu pet
+    Route::get('/pet/{pet}/rekam-medis', [DashboardPemilikController::class, 'showRekamMedis'])
+         ->name('pemilik.rekam_medis.show');
+});
