@@ -26,6 +26,7 @@ Route::get('/cek-koneksi', [SiteController::class, 'cekKoneksi'])->name('cek_kon
 
 // Home (index.php)
 Route::get('/', [SiteController::class, 'index'])->name('home');
+Route::get('/home', function () { return redirect('/'); });
 
 // Struktur Organisasi (struktur.php)
 Route::get('/struktur', [SiteController::class, 'strukturOrganisasi'])->name('struktur');
@@ -41,79 +42,93 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 
 Auth::routes();
 
-// Admin routes
-Route::prefix('admin')->middleware(['auth'])->group(function () {
+// Admin routes - Grouped with isAdministrator middleware
+Route::prefix('admin')->middleware(['auth', 'isAdministrator'])->name('admin.')->group(function () {
+    // Dashboard
+     // Redirect base to dashboard
+     Route::get('/', function () { return redirect()->route('admin.dashboard'); });
+
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
-    })->name('admin.dashboard');
+    })->name('dashboard');
 
-    Route::resource('jenish', JenisHewanController::class, ['as' => 'admin']);
-    Route::resource('kategori', KategoriController::class, ['as' => 'admin']);
-    Route::resource('kategoriklinis', KategoriKlinisController::class, ['as' => 'admin']);
-    Route::resource('kodetindakanterapi', KodeTindakanTerapiController::class, ['as' => 'admin']);
-    Route::resource('pemilik', PemilikController::class, ['as' => 'admin']);
-    Route::resource('rashewan', RasHewanController::class, ['as' => 'admin']);
-    Route::resource('role', RoleController::class, ['as' => 'admin']);
-    Route::resource('user', UserController::class, ['as' => 'admin']);
-    Route::resource('pet', PetController::class, ['as' => 'admin']);
+    // Master Data Routes
+    Route::resource('jenish', JenisHewanController::class);
+    Route::resource('kategori', KategoriController::class);
+    Route::resource('kategoriklinis', KategoriKlinisController::class);
+    Route::resource('kodetindakanterapi', KodeTindakanTerapiController::class);
+    Route::resource('rashewan', RasHewanController::class);
+    Route::resource('role', RoleController::class);
+    Route::resource('user', UserController::class);
+    Route::resource('pemilik', PemilikController::class);
+    Route::resource('pet', PetController::class);
 });
 
-// Resepsionis routes
-Route::prefix('resepsionis')->middleware(['auth'])->group(function () {
+// Resepsionis routes - Grouped with isResepsionis middleware
+Route::prefix('resepsionis')->middleware(['auth', 'isResepsionis'])->name('resepsionis.')->group(function () {
+     // Redirect base to dashboard
+     Route::get('/', function () { return redirect()->route('resepsionis.dashboard'); });
     
     // Rute untuk halaman dashboard utama (yang ada kartu)
     Route::get('/dashboard', [DashboardResepsionisController::class, 'index'])
-         ->name('resepsionis.dashboard');
+         ->name('dashboard');
 
     // Rute untuk daftar temu dokter
     Route::get('/temu-dokter', [TemuDokterController::class, 'index'])
-         ->name('resepsionis.temu_dokter.index');
+         ->name('temu_dokter.index');
 
     // Rute resource untuk Pemilik
-    Route::resource('pemilik', PemilikResepsionisController::class, ['as' => 'resepsionis'])
+    Route::resource('pemilik', PemilikResepsionisController::class)
          ->only(['index', 'show']);
     
     // Rute resource untuk Pet
-    Route::resource('pet', PetResepsionisController::class, ['as' => 'resepsionis'])
+    Route::resource('pet', PetResepsionisController::class)
          ->only(['index', 'show']);
 });
 
-// Dokter routes
-Route::prefix('dokter')->middleware(['auth'])->group(function () {
-    
+// Dokter routes - Grouped with isDokter middleware
+Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->group(function () {
+    // Redirect base to dashboard
+    Route::get('/', function () { return redirect()->route('dokter.dashboard'); });
+
     Route::get('/dashboard', [DashboardDokterController::class, 'index'])
-         ->name('dokter.dashboard');
+         ->name('dashboard');
     Route::get('/pasien/{pet}/rekam-medis', [DashboardDokterController::class, 'showRekamMedis'])
-         ->name('dokter.rekam_medis.index');
+         ->name('rekam_medis.index');
 });
 
-// Perawat routes
-Route::prefix('perawat')->middleware(['auth'])->group(function () {
-    
+// Perawat routes - Grouped with isPerawat middleware
+Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->group(function () {
+    // Redirect base to dashboard
+    Route::get('/', function () { return redirect()->route('perawat.dashboard'); });
+
     // Rute untuk halaman dashboard utama (dengan kartu)
     Route::get('/dashboard', [DashboardPerawatController::class, 'index'])
-         ->name('perawat.dashboard');
+         ->name('dashboard');
 
     // Rute untuk "Daftar Semua Temu Dokter"
     Route::get('/antrian', [AntrianController::class, 'index'])
-         ->name('perawat.antrian.index');
+         ->name('antrian.index');
 
     // Rute untuk "Daftar Semua Pasien" (untuk melihat rekam medis)
     Route::get('/pasien', [PasienController::class, 'index'])
-         ->name('perawat.pasien.index');
+         ->name('pasien.index');
 
     // Rute untuk "Detail Rekam Medis" per pasien
     Route::get('/pasien/{pet}', [PasienController::class, 'show'])
-         ->name('perawat.pasien.show');
+         ->name('pasien.show');
 }); 
-// Pemilik routes
-Route::prefix('pemilik')->middleware(['auth'])->group(function () {
+
+// Pemilik routes - Grouped with isPemilik middleware
+Route::prefix('pemilik')->middleware(['auth', 'isPemilik'])->name('pemilik.')->group(function () {
+    // Redirect base to dashboard
+    Route::get('/', function () { return redirect()->route('pemilik.dashboard'); });
     
     // Rute untuk halaman dashboard utama (menampilkan daftar pet milik pemilik)
     Route::get('/dashboard', [DashboardPemilikController::class, 'index'])
-         ->name('pemilik.dashboard');
+         ->name('dashboard');
 
     // Rute untuk melihat riwayat rekam medis satu pet
     Route::get('/pet/{pet}/rekam-medis', [DashboardPemilikController::class, 'showRekamMedis'])
-         ->name('pemilik.rekam_medis.show');
+         ->name('rekam_medis.show');
 });

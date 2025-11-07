@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\Role;
 
@@ -72,21 +73,28 @@ class LoginController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
-        // Ambil user dengan relasi roleUser dan role (ambil yang status=1)
-        $user = User::with(['roles' => function ($query) {
-            $query->wherePivot('status', 1);
-        }])->where('email', $request->email)->first();
+        // Ambil user dan relasi role (utamakan role dengan pivot status=1, jika tidak ada ambil role pertama)
+        $user = User::with('roles')->where('email', $request->email)->first();
 
         // Cek keberadaan user dan verifikasi password
         if (!$user || !Hash::check($request->password, $user->password)) {
             return back()->withErrors(['email' => 'Invalid credentials'])->withInput();
         }
 
+        // Tentukan role aktif (status=1 jika ada, jika tidak ada pakai role pertama)
+        $activeRole = $user->roles->firstWhere(function ($r) {
+            return isset($r->pivot) && isset($r->pivot->status) && (int) $r->pivot->status === 1;
+        }) ?? $user->roles->first();
+
+        if (!$activeRole) {
+            return back()->withErrors(['email' => 'Akun tidak memiliki role aktif. Hubungi admin.'])->withInput();
+        }
+
         // Login user menggunakan Laravel Auth
         Auth::login($user);
 
         // Simpan 5 variabel session kustom
-        $role = $user->roles->first();
+    $role = $activeRole;
         session([
             'user_id' => $user->iduser,
             'user_name' => $user->nama,
@@ -97,7 +105,28 @@ class LoginController extends Controller
         ]);
 
         // Lakukan redirect menggunakan switch case berdasarkan userRole (ID Role)
-        $userRole = $role ? $role->idrole : null;
+        $userRole = $role ? (string) $role->idrole : null;
+
+        // Tentukan target route name berdasarkan role
+        $targetRouteName = match ($userRole) {
+            '1' => 'admin.dashboard',
+            '2' => 'dokter.dashboard',
+            '3' => 'perawat.dashboard',
+            '4' => 'resepsionis.dashboard',
+            '5' => 'pemilik.dashboard',
+            default => null
+        };
+
+        // Log keputusan redirect untuk debugging
+        Log::info('Login redirect decision', [
+            'user_id' => $user->iduser ?? null,
+            'email' => $user->email ?? null,
+            'detected_role_id' => $userRole,
+            'detected_role_name' => $role->nama_role ?? null,
+            'pivot_status' => $role->pivot->status ?? null,
+            'target_route' => $targetRouteName,
+        ]);
+
         switch ($userRole) {
             case '1':
                 return redirect()->route('admin.dashboard');
@@ -110,7 +139,8 @@ class LoginController extends Controller
             case '5':
                 return redirect()->route('pemilik.dashboard');
             default:
-                return redirect()->route('home');
+                // Jika role tidak dikenali, arahkan kembali ke login dengan pesan
+                return redirect()->route('login')->withErrors(['email' => 'Role tidak dikenali. Hubungi admin.']);
         }
     }
 

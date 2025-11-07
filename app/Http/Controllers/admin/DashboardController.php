@@ -8,6 +8,7 @@ use App\Models\Pet;
 use App\Models\Pemilik;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {

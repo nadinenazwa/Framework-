@@ -24,6 +24,13 @@ class KodeTindakanTerapi extends Model
     protected $primaryKey = 'idkode_tindakan_terapi';
 
     /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

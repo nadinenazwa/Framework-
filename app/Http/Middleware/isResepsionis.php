@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class isResepsionis
@@ -15,10 +16,23 @@ class isResepsionis
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->roles->where('nama_role', 'resepsionis')->count() > 0) {
-            return $next($request);
+        if (auth()->check()) {
+            $user = auth()->user()->loadMissing('roles');
+            $allowed = $user->roles->contains(function ($role) {
+                return strcasecmp($role->nama_role ?? '', 'Resepsionis') === 0
+                    && (!isset($role->pivot) || !isset($role->pivot->status) || (int) $role->pivot->status === 1);
+            });
+
+            if ($allowed) {
+                return $next($request);
+            }
         }
 
-        return redirect('/home')->with('error', 'Anda tidak memiliki akses.');
+        Log::warning('Access denied by middleware', [
+            'middleware' => __CLASS__,
+            'user_id' => auth()->id(),
+            'path' => $request->path(),
+        ]);
+        return redirect()->route('login')->with('error', 'Anda tidak memiliki akses.');
     }
 }
