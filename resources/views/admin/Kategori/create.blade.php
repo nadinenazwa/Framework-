@@ -1,53 +1,85 @@
-@extends('layouts.app')
+@extends('layouts.lte.main')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Tambah Kategori</h4>
+<div class="app-content-header">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3 class="mb-0">Tambah Kategori</h3>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.kategori.index') }}">Kategori</a></li>
+                    <li class="breadcrumb-item active">Tambah</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="app-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Form Tambah Kategori</h3>
+                    </div>
+                    <div class="card-body">
+                        @if(session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Gagal!</strong> {{ session('error') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
+
+                        @if(isset($errors) && is_object($errors) && $errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>Validasi Error!</strong>
+                                <ul class="mb-0 mt-2">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        @endif
+
+                        <form action="{{ route('admin.kategori.store') }}" method="POST">
+                            @csrf
+                            <div class="form-group mb-3">
+                                <label for="nama_kategori" class="form-label">Nama Kategori <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       class="form-control {{ (isset($errors) && is_object($errors) && $errors->has('nama_kategori')) ? 'is-invalid' : '' }}" 
+                                       id="nama_kategori" 
+                                       name="nama_kategori" 
+                                       value="{{ old('nama_kategori') }}" 
+                                       placeholder="Masukkan Nama Kategori"
+                                       required>
+                                @if(isset($errors) && is_object($errors) && $errors->has('nama_kategori'))
+                                    <div class="invalid-feedback d-block">
+                                        {{ $errors->first('nama_kategori') }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="d-flex justify-content-between gap-2">
+                                <a href="{{ route('admin.kategori.index') }}" class="btn btn-secondary">
+                                    <i class="bi bi-arrow-left"></i> Kembali
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Simpan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="card-body">
-                    @if(session('error'))
-                        <div class="alert alert-danger">
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
-                    @if(isset($errors) && is_object($errors) && $errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <form action="{{ route('admin.kategori.store') }}" method="POST">
-                        @csrf
-                        <div class="form-group mb-3">
-                            <label for="nama_kategori">Nama Kategori <span class="text-danger">*</span></label>
-                            <input type="text" 
-                                   class="form-control {{ (isset($errors) && is_object($errors) && $errors->has('nama_kategori')) ? 'is-invalid' : '' }}" 
-                                   id="nama_kategori" 
-                                   name="nama_kategori" 
-                                   value="{{ old('nama_kategori') }}" 
-                                   placeholder="Masukkan Nama Kategori"
-                                   required>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('admin.kategori.index') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Kembali
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Simpan
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
             </div>
         </div>
     </div>

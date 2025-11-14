@@ -1,127 +1,115 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\JenisHewan;
-use App\Helpers\ResponseHelper;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB; 
+use Exception; 
 
 class JenisHewanController extends Controller
 {
+    /**
+     * Menampilkan daftar jenis hewan.
+     */
     public function index()
     {
-        $jenisHewan = JenisHewan::all();
+        $jenisHewan = DB::table('jenis_hewan')
+            ->select('idjenis_hewan', 'nama_jenis_hewan')
+            ->get();
+            
         return view('admin.JenisHewan.index', compact('jenisHewan'));
     }
 
+    /**
+     * Menampilkan form untuk membuat data baru.
+     */
     public function create()
     {
         return view('admin.JenisHewan.create');
     }
 
+    /**
+     * Menyimpan data baru ke database.
+     */
     public function store(Request $request)
     {
-        $validator = $this->validateData($request);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        $request->validate([
+            'nama_jenis_hewan' => 'required|string|max:100',
+        ]);
 
         try {
-            $this->createRecord($request);
-
-            return redirect()->route('admin.jenish.index')
-                ->with('success', 'Data jenis hewan berhasil ditambahkan.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Gagal menambahkan data jenis hewan: ' . $e->getMessage());
-        }
-    }
-
-    public function edit($id)
-    {
-        $jenisHewan = JenisHewan::findOrFail($id);
-        return view('admin.JenisHewan.edit', compact('jenisHewan'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $jenisHewan = JenisHewan::findOrFail($id);
-
-        $validator = $this->validateData($request, $id);
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        try {
-            $jenisHewan->update([
-                'nama_jenis_hewan' => $this->formatNama($request->nama_jenis_hewan),
+            DB::table('jenis_hewan')->insert([
+                'nama_jenis_hewan' => $request->nama_jenis_hewan,
+                // 'status' => 1, // Anda bisa tambahkan field lain jika perlu
             ]);
 
             return redirect()->route('admin.jenish.index')
-                ->with('success', 'Data jenis hewan berhasil diperbarui.');
-        } catch (\Exception $e) {
+                             ->with('success', 'Data jenis hewan berhasil disimpan.');
+        } catch (Exception $e) {
+            // throw new Exception('Gagal menyimpan data jenis hewan: ' . $e->getMessage());
             return redirect()->back()
-                ->withInput()
-                ->with('error', 'Gagal memperbarui data jenis hewan: ' . $e->getMessage());
+                             ->with('error', 'Gagal menyimpan data: ' . $e->getMessage());
         }
     }
 
+    /**
+     * Menampilkan form untuk mengedit data.
+     */
+    public function edit($id)
+    {
+        // Query Builder
+        $jenisHewan = DB::table('jenis_hewan')
+            ->where('idjenis_hewan', $id)
+            ->first();
+
+        if (!$jenisHewan) {
+            return redirect()->route('admin.jenish.index')
+                             ->with('error', 'Data tidak ditemukan.');
+        }
+        return view('admin.JenisHewan.edit', compact('jenisHewan'));
+    }
+
+    /**
+     * Memperbarui data di database.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'nama_jenis_hewan' => 'required|string|max:100',
+        ]);
+
+        try {
+            DB::table('jenis_hewan')
+                ->where('idjenis_hewan', $id)
+                ->update([
+                    'nama_jenis_hewan' => $request->nama_jenis_hewan,
+                ]);
+
+            return redirect()->route('admin.jenish.index')
+                             ->with('success', 'Data jenis hewan berhasil diperbarui.');
+        } catch (Exception $e) {
+            return redirect()->back()
+                             ->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Menghapus data dari database.
+     * Menggunakan Query Builder 'delete'.
+     */
     public function destroy($id)
     {
         try {
-            $jenisHewan = JenisHewan::findOrFail($id);
-            $jenisHewan->delete();
+            DB::table('jenis_hewan')
+                ->where('idjenis_hewan', $id)
+                ->delete();
 
             return redirect()->route('admin.jenish.index')
-                ->with('success', 'Data jenis hewan berhasil dihapus.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Gagal menghapus data jenis hewan: ' . $e->getMessage());
+                             ->with('success', 'Data jenis hewan berhasil dihapus.');
+        } catch (Exception $e) {
+            return redirect()->route('admin.jenish.index')
+                             ->with('error', 'Gagal menghapus data: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Validate jenis hewan data
-     */
-    private function validateData(Request $request, $id = null)
-    {
-        $rules = [
-            'nama_jenis_hewan' => 'required|string|max:255|unique:jenis_hewan,nama_jenis_hewan' . ($id ? ',' . $id . ',idjenis_hewan' : ''),
-        ];
-
-        $messages = [
-            'nama_jenis_hewan.required' => 'Nama jenis hewan wajib diisi.',
-            'nama_jenis_hewan.string' => 'Nama jenis hewan harus berupa teks.',
-            'nama_jenis_hewan.max' => 'Nama jenis hewan maksimal 255 karakter.',
-            'nama_jenis_hewan.unique' => 'Nama jenis hewan sudah ada.',
-        ];
-
-        return Validator::make($request->all(), $rules, $messages);
-    }
-
-    /**
-     * Create new jenis hewan record
-     */
-    private function createRecord(Request $request)
-    {
-        return JenisHewan::create([
-            'nama_jenis_hewan' => $this->formatNama($request->nama_jenis_hewan),
-        ]);
-    }
-
-    /**
-     * Format nama with proper capitalization
-     */
-    private function formatNama($nama)
-    {
-        return ucwords(strtolower(trim($nama)));
     }
 }

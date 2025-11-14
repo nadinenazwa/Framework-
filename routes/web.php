@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Site\SiteController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\JenisHewanController;
 use App\Http\Controllers\Admin\KategoriController;
 use App\Http\Controllers\Admin\KategoriKlinisController;
@@ -42,15 +43,13 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 
 Auth::routes();
 
-// Admin routes - Grouped with isAdministrator middleware
+// Admin routes 
 Route::prefix('admin')->middleware(['auth', 'isAdministrator'])->name('admin.')->group(function () {
     // Dashboard
      // Redirect base to dashboard
      Route::get('/', function () { return redirect()->route('admin.dashboard'); });
 
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Master Data Routes
     Route::resource('jenish', JenisHewanController::class);

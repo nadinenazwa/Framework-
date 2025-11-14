@@ -20,9 +20,9 @@ class DashboardController extends Controller
         $totalOwners = Pemilik::count();
         $totalRoles = Role::count();
 
-        // Recent pets
-        $recentPets = Pet::with(['pemilik.user', 'rasHewan'])
-            ->orderBy('created_at', 'desc')
+        // Recent users - order by iduser descending (latest added)
+        $recentUsers = User::with('roles')
+            ->orderBy('iduser', 'desc')
             ->take(5)
             ->get();
 
@@ -31,7 +31,7 @@ class DashboardController extends Controller
             'totalPets',
             'totalOwners',
             'totalRoles',
-            'recentPets'
+            'recentUsers'
         ));
     }
 }
