@@ -13,14 +13,18 @@ use App\Http\Controllers\Admin\PemilikController;
 use App\Http\Controllers\Admin\RasHewanController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\TemuDokterController as AdminTemuDokterController;
+use App\Http\Controllers\Admin\RekamMedisController as AdminRekamMedisController;
 use App\Http\Controllers\Resepsionis\DashboardResepsionisController;
 use App\Http\Controllers\Resepsionis\PemilikResepsionisController;
 use App\Http\Controllers\Resepsionis\PetResepsionisController;
 use App\Http\Controllers\Resepsionis\TemuDokterController;
 use App\Http\Controllers\Dokter\DashboardDokterController;
+use App\Http\Controllers\Dokter\DetailRekamMedisController;
 use App\Http\Controllers\Perawat\DashboardPerawatController;
 use App\Http\Controllers\Perawat\AntrianController;
 use App\Http\Controllers\Perawat\PasienController;
+use App\Http\Controllers\Perawat\RekamMedisController;
 use App\Http\Controllers\Pemilik\DashboardPemilikController;
 
 Route::get('/cek-koneksi', [SiteController::class, 'cekKoneksi'])->name('cek_koneksi');
@@ -61,6 +65,9 @@ Route::prefix('admin')->middleware(['auth', 'isAdministrator'])->name('admin.')-
     Route::resource('user', UserController::class);
     Route::resource('pemilik', PemilikController::class);
     Route::resource('pet', PetController::class);
+     // Admin access to Temu Dokter and Rekam Medis (CRUD)
+     Route::resource('temu-dokter', AdminTemuDokterController::class, ['parameters' => ['temu-dokter' => 'temuDokter']])->except(['show']);
+     Route::resource('rekam-medis', AdminRekamMedisController::class, ['parameters' => ['rekam-medis' => 'rekamMedis']])->except(['show']);
 });
 
 // Resepsionis routes - Grouped with isResepsionis middleware
@@ -72,17 +79,17 @@ Route::prefix('resepsionis')->middleware(['auth', 'isResepsionis'])->name('resep
     Route::get('/dashboard', [DashboardResepsionisController::class, 'index'])
          ->name('dashboard');
 
-    // Rute untuk daftar temu dokter
-    Route::get('/temu-dokter', [TemuDokterController::class, 'index'])
-         ->name('temu_dokter.index');
+    // Rute resource untuk Temu Dokter (reservasi)
+    Route::resource('temu-dokter', TemuDokterController::class)
+         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 
     // Rute resource untuk Pemilik
     Route::resource('pemilik', PemilikResepsionisController::class)
-         ->only(['index', 'show']);
+         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     
     // Rute resource untuk Pet
     Route::resource('pet', PetResepsionisController::class)
-         ->only(['index', 'show']);
+         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 });
 
 // Dokter routes - Grouped with isDokter middleware
@@ -94,6 +101,20 @@ Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->grou
          ->name('dashboard');
     Route::get('/pasien/{pet}/rekam-medis', [DashboardDokterController::class, 'showRekamMedis'])
          ->name('rekam_medis.index');
+
+    // Detail Rekam Medis CRUD
+    Route::resource('detail-rekam-medis', DetailRekamMedisController::class)
+         ->only(['index', 'show']);
+    Route::post('/rekam-medis/{rekamMedis}/detail', [DetailRekamMedisController::class, 'store'])
+         ->name('detail_rekam_medis.store');
+    Route::get('/rekam-medis/{rekamMedis}/detail/create', [DetailRekamMedisController::class, 'create'])
+         ->name('detail_rekam_medis.create');
+    Route::get('/detail-rekam-medis/{detailRekamMedis}/edit', [DetailRekamMedisController::class, 'edit'])
+         ->name('detail_rekam_medis.edit');
+    Route::put('/detail-rekam-medis/{detailRekamMedis}', [DetailRekamMedisController::class, 'update'])
+         ->name('detail_rekam_medis.update');
+    Route::delete('/detail-rekam-medis/{detailRekamMedis}', [DetailRekamMedisController::class, 'destroy'])
+         ->name('detail_rekam_medis.destroy');
 });
 
 // Perawat routes - Grouped with isPerawat middleware
@@ -116,6 +137,10 @@ Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->g
     // Rute untuk "Detail Rekam Medis" per pasien
     Route::get('/pasien/{pet}', [PasienController::class, 'show'])
          ->name('pasien.show');
+
+    // Rekam Medis CRUD
+    Route::resource('rekam-medis', RekamMedisController::class)
+         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
 }); 
 
 // Pemilik routes - Grouped with isPemilik middleware

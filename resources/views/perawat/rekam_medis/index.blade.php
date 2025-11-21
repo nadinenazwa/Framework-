@@ -1,14 +1,14 @@
 @extends('layouts.lte.main')
 
-@section('title', 'Daftar Hewan Peliharaan')
+@section('title', 'Daftar Rekam Medis')
 
 @section('content')
 <div class="container-fluid">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-light rounded px-3 py-2">
-            <li class="breadcrumb-item"><a href="{{ route('resepsionis.dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Hewan Peliharaan</li>
+            <li class="breadcrumb-item"><a href="{{ route('perawat.dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Rekam Medis</li>
         </ol>
     </nav>
 
@@ -16,13 +16,13 @@
     <div class="row mb-4">
         <div class="col-md-8">
             <h2 class="mb-1">
-                <i class="bi bi-paw"></i> Daftar Hewan Peliharaan
+                <i class="bi bi-file-medical"></i> Daftar Rekam Medis
             </h2>
-            <p class="text-muted">Kelola data hewan peliharaan pelanggan</p>
+            <p class="text-muted">Kelola rekam medis pasien (hewan)</p>
         </div>
         <div class="col-md-4 text-end">
-            <a href="{{ route('resepsionis.pet.create') }}" class="btn btn-primary btn-lg">
-                <i class="bi bi-plus-circle"></i> Tambah Hewan
+            <a href="{{ route('perawat.rekam-medis.create') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Tambah Rekam Medis
             </a>
         </div>
     </div>
@@ -53,11 +53,11 @@
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">
-                <i class="bi bi-table"></i> Data Hewan Peliharaan
+                <i class="bi bi-table"></i> Data Rekam Medis
             </h5>
         </div>
         <div class="card-body">
-            @if($pets->count() > 0)
+            @if($rekamMedis->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover table-striped mb-0">
                         <thead class="table-light">
@@ -66,19 +66,19 @@
                                     <i class="bi bi-hash"></i> ID
                                 </th>
                                 <th class="col-2">
-                                    <i class="bi bi-paw"></i> Nama Hewan
-                                </th>
-                                <th class="col-2">
-                                    <i class="bi bi-diagram-3"></i> Jenis
-                                </th>
-                                <th class="col-2">
-                                    <i class="bi bi-tag"></i> Ras
+                                    <i class="bi bi-paw"></i> Pasien (Hewan)
                                 </th>
                                 <th class="col-2">
                                     <i class="bi bi-person"></i> Pemilik
                                 </th>
                                 <th class="col-1">
-                                    <i class="bi bi-weight"></i> Berat
+                                    <i class="bi bi-calendar-event"></i> Temu Dokter
+                                </th>
+                                <th class="col-2">
+                                    <i class="bi bi-stethoscope"></i> Dokter
+                                </th>
+                                <th class="col-2">
+                                    <i class="bi bi-file-text"></i> Diagnosis
                                 </th>
                                 <th class="col-2">
                                     <i class="bi bi-gear"></i> Aksi
@@ -86,48 +86,56 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($pets as $pet)
+                            @foreach($rekamMedis as $medis)
                                 <tr>
-                                    <td class="fw-bold">{{ $pet->idpet }}</td>
+                                    <td class="fw-bold">{{ $medis->idrekam_medis }}</td>
                                     <td>
-                                        <strong>{{ $pet->nama_hewan ?? '-' }}</strong><br>
-                                        <small class="text-muted">Warna: {{ $pet->warna ?? '-' }}</small>
-                                    </td>
-                                    <td>
-                                        {{ $pet->jenisHewan->nama_jenis_hewan ?? '-' }}
-                                    </td>
-                                    <td>
-                                        {{ $pet->rasHewan->nama_ras ?? '-' }}
-                                    </td>
-                                    <td>
-                                        {{ $pet->pemilik->nama_pemilik ?? '-' }}<br>
+                                        <strong>{{ $medis->pet->nama_hewan ?? '-' }}</strong><br>
                                         <small class="text-muted">
-                                            {{ $pet->pemilik->user->email ?? '-' }}
+                                            {{ $medis->pet->rasHewan->nama_ras ?? '-' }}
                                         </small>
                                     </td>
                                     <td>
-                                        {{ $pet->berat_badan ?? '-' }} kg
+                                        {{ $medis->pet->pemilik->nama_pemilik ?? '-' }}<br>
+                                        <small class="text-muted">
+                                            {{ $medis->pet->pemilik->user->email ?? '-' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        @if($medis->temuDokter)
+                                            <span class="badge bg-info">
+                                                {{ date('d/m/Y', strtotime($medis->temuDokter->waktu_daftar)) }}
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary">Tidak ada</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        {{ $medis->dokterPemeriksa->user->name ?? '-' }}
+                                    </td>
+                                    <td>
+                                        <small>{{ Str::limit($medis->diagnosa, 50) }}</small>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('resepsionis.pet.show', $pet->idpet) }}" 
+                                            <a href="{{ route('perawat.rekam-medis.show', $medis->idrekam_medis) }}" 
                                                class="btn btn-info" title="Lihat Detail">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{{ route('resepsionis.pet.edit', $pet->idpet) }}" 
+                                            <a href="{{ route('perawat.rekam-medis.edit', $medis->idrekam_medis) }}" 
                                                class="btn btn-warning" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                             <button type="button" class="btn btn-danger" 
                                                     data-bs-toggle="modal" 
-                                                    data-bs-target="#deleteModal{{ $pet->idpet }}"
+                                                    data-bs-target="#deleteModal{{ $medis->idrekam_medis }}"
                                                     title="Hapus">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
 
                                         <!-- Delete Modal -->
-                                        <div class="modal fade" id="deleteModal{{ $pet->idpet }}" 
+                                        <div class="modal fade" id="deleteModal{{ $medis->idrekam_medis }}" 
                                              tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
@@ -139,16 +147,19 @@
                                                                 data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <p>Apakah Anda yakin ingin menghapus hewan peliharaan ini?</p>
+                                                        <p>Apakah Anda yakin ingin menghapus rekam medis ini?</p>
+                                                        <p class="text-danger small">
+                                                            <strong>Peringatan:</strong> Penghapusan ini juga akan menghapus semua detail rekam medis yang terkait.
+                                                        </p>
                                                         <div class="bg-light p-3 rounded">
-                                                            <strong>Nama Hewan:</strong> {{ $pet->nama_hewan ?? '-' }}<br>
-                                                            <strong>Pemilik:</strong> {{ $pet->pemilik->nama_pemilik ?? '-' }}
+                                                            <strong>Pasien:</strong> {{ $medis->pet->nama_hewan ?? '-' }}<br>
+                                                            <strong>Pemilik:</strong> {{ $medis->pet->pemilik->nama_pemilik ?? '-' }}
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" 
                                                                 data-bs-dismiss="modal">Batal</button>
-                                                        <form action="{{ route('resepsionis.pet.destroy', $pet->idpet) }}" 
+                                                        <form action="{{ route('perawat.rekam-medis.destroy', $medis->idrekam_medis) }}" 
                                                               method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
@@ -169,15 +180,15 @@
 
                 <!-- Pagination -->
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $pets->links('pagination::bootstrap-5') }}
+                    {{ $rekamMedis->links('pagination::bootstrap-5') }}
                 </div>
             @else
                 <div class="alert alert-info text-center py-5" role="alert">
                     <i class="bi bi-info-circle" style="font-size: 2.5rem;"></i>
-                    <h5 class="mt-3">Belum Ada Data Hewan Peliharaan</h5>
-                    <p class="mb-3">Tidak ada hewan peliharaan yang terdaftar dalam sistem.</p>
-                    <a href="{{ route('resepsionis.pet.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Daftarkan Hewan Pertama
+                    <h5 class="mt-3">Belum Ada Data Rekam Medis</h5>
+                    <p class="mb-3">Tidak ada rekam medis yang tersimpan dalam sistem.</p>
+                    <a href="{{ route('perawat.rekam-medis.create') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Buat Rekam Medis Pertama
                     </a>
                 </div>
             @endif

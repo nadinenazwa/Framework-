@@ -14,6 +14,46 @@
                 </ol>
             </div>
         </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-2">Total Temu Dokter</h6>
+                                <h2 class="mb-0">{{ $totalTemuDokter ?? '-' }}</h2>
+                            </div>
+                            <div style="font-size: 2.5rem; opacity: 0.3;">
+                                <i class="bi bi-calendar2-check-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-info bg-opacity-25">
+                        <small><a href="{{ route('admin.temu-dokter.index') }}" class="text-white text-decoration-none">Kelola <i class="bi bi-arrow-right"></i></a></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-white bg-secondary mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-2">Total Rekam Medis</h6>
+                                <h2 class="mb-0">{{ $totalRekamMedis ?? '-' }}</h2>
+                            </div>
+                            <div style="font-size: 2.5rem; opacity: 0.3;">
+                                <i class="bi bi-file-medical-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-secondary bg-opacity-25">
+                        <small><a href="{{ route('admin.rekam-medis.index') }}" class="text-white text-decoration-none">Kelola <i class="bi bi-arrow-right"></i></a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RekamMedis extends Model
 {
+    public $timestamps = false;
     use HasFactory;
 
     /**
@@ -29,6 +30,7 @@ class RekamMedis extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'idpet',
         'anamnesa',
         'temuan_klinis',
         'diagnosa',
