@@ -1,15 +1,12 @@
 <?php
 
 namespace App\Models;
-
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -61,14 +58,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the pemilik associated with the user.
-     */
-    public function pemilik()
-    {
-        return $this->hasOne(Pemilik::class, 'iduser', 'iduser');
-    }
-
-    /**
      * The roles that belong to the user.
      */
     public function roles()
@@ -79,7 +68,47 @@ class User extends Authenticatable
 
     public function roleUser()
     {
-    
         return $this->hasMany(RoleUser::class, 'iduser', 'iduser');
+    }
+    
+    // --- RELASI TAMBAHAN ---
+    public function pemilik()
+    {
+        return $this->hasOne(Pemilik::class, 'iduser', 'iduser');
+    }
+
+    public function dokter()
+    {
+        return $this->hasOne(Dokter::class, 'iduser', 'iduser');
+    }
+
+    public function perawat()
+    {
+        return $this->hasOne(Perawat::class, 'iduser', 'iduser');
+    }
+
+    /**
+     * Cek apakah user memiliki role 'dokter'.
+     */
+    public function isDokter()
+    {
+        return $this->roles()->where('nama_role', 'dokter')->exists();
+    }
+
+    /**
+     * Cek apakah user memiliki role 'perawat'.
+     */
+    public function isPerawat()
+    {
+        return $this->roles()->where('nama_role', 'perawat')->exists();
+    }
+
+    /**
+     * Cek apakah user memiliki role 'admin'.
+     */
+
+    public function isAdministrator()
+    {
+        return $this->roles()->where('nama_role', 'admin')->exists();
     }
 }

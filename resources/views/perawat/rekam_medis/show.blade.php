@@ -205,7 +205,7 @@
             <h5 class="mb-0">
                 <i class="bi bi-list-check"></i> Detail Tindakan & Terapi
             </h5>
-            <a href="{{ route('dokter.detail_rekam_medis.create', $rekamMedis->idrekam_medis) }}" class="btn btn-light btn-sm">
+            <a href="{{ route('perawat.detail_rekam_medis.create', ['rekamMedis' => $rekamMedis->idrekam_medis]) }}" class="btn btn-light btn-sm">
                 <i class="bi bi-plus-circle"></i> Tambah Detail
             </a>
         </div>
@@ -234,11 +234,11 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('dokter.detail_rekam_medis.show', $detail->iddetail_rekam_medis) }}" 
+                                            <a href="{{ route('perawat.detail_rekam_medis.show', $detail->iddetail_rekam_medis) }}" 
                                                class="btn btn-info" title="Lihat">
                                                 <i class="bi bi-eye"></i>
                                             </a>
-                                            <a href="{{ route('dokter.detail_rekam_medis.edit', $detail->iddetail_rekam_medis) }}" 
+                                            <a href="{{ route('perawat.detail_rekam_medis.edit', $detail->iddetail_rekam_medis) }}" 
                                                class="btn btn-warning" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
@@ -272,7 +272,7 @@
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" 
                                                                 data-bs-dismiss="modal">Batal</button>
-                                                        <form action="{{ route('dokter.detail_rekam_medis.destroy', $detail->iddetail_rekam_medis) }}" 
+                                                        <form action="{{ route('perawat.detail_rekam_medis.destroy', $detail->iddetail_rekam_medis) }}" 
                                                               method="POST" class="d-inline">
                                                             @csrf
                                                             @method('DELETE')
@@ -293,7 +293,7 @@
             @else
                 <div class="alert alert-info" role="alert">
                     <i class="bi bi-info-circle"></i> Belum ada detail tindakan/terapi untuk rekam medis ini.
-                    <a href="{{ route('dokter.detail_rekam_medis.create', $rekamMedis->idrekam_medis) }}" class="alert-link">
+                    <a href="{{ route('perawat.detail_rekam_medis.create', ['rekamMedis' => $rekamMedis->idrekam_medis]) }}" class="alert-link">
                         Tambah sekarang
                     </a>
                 </div>

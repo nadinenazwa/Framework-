@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.lte.main')
 
 @section('content')
-<div class="container">
+<div class="container-fluid">
     <h1>Dashboard Dokter</h1>
     
     <p>Selamat datang, {{ Auth::user()->nama }}!</p>
@@ -15,7 +15,7 @@
                 <div class="card-body">
                     
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover">
+                        <table class="table table-bordered table-striped">
                             <thead class="thead-dark">
                                 <tr>
                                     <th>Nama Pasien</th>

@@ -129,58 +129,7 @@
                                             <small class="text-muted">Kategori: {{ $detail->tindakanTerapi->kategori->nama_kategori_klinis ?? '-' }}</small>
                                         </td>
                                         <td><small>{{ $detail->detail }}</small></td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group">
-                                                <a href="{{ route('dokter.detail_rekam_medis.show', $detail->iddetail_rekam_medis) }}" 
-                                                   class="btn btn-info" title="Lihat">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
-                                                <a href="{{ route('dokter.detail_rekam_medis.edit', $detail->iddetail_rekam_medis) }}" 
-                                                   class="btn btn-warning" title="Edit">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#deleteDetailModal{{ $detail->iddetail_rekam_medis }}"
-                                                        title="Hapus">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </div>
-
-                                            <!-- Delete Modal -->
-                                            <div class="modal fade" id="deleteDetailModal{{ $detail->iddetail_rekam_medis }}" 
-                                                 tabindex="-1" aria-labelledby="deleteDetailModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog modal-sm">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header bg-danger text-white">
-                                                            <h5 class="modal-title" id="deleteDetailModalLabel">
-                                                                <i class="bi bi-exclamation-triangle"></i> Konfirmasi Hapus
-                                                            </h5>
-                                                            <button type="button" class="btn-close btn-close-white" 
-                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Yakin ingin menghapus tindakan ini?</p>
-                                                            <p class="text-muted small">
-                                                                {{ $detail->tindakanTerapi->deskripsi_tindakan_terapi ?? '-' }}
-                                                            </p>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" 
-                                                                    data-bs-dismiss="modal">Batal</button>
-                                                            <form action="{{ route('dokter.detail_rekam_medis.destroy', $detail->iddetail_rekam_medis) }}" 
-                                                                  method="POST" class="d-inline">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">
-                                                                    <i class="bi bi-trash"></i> Hapus
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
+                                        <td>-</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -189,7 +138,7 @@
                     @else
                         <div class="alert alert-warning mb-0">
                             <i class="bi bi-info-circle"></i> Belum ada detail tindakan/terapi untuk rekam medis ini.
-                            <a href="{{ route('dokter.detail_rekam_medis.create', $rekam->idrekam_medis) }}" class="alert-link ms-2">
+                            <a href="{{ route('perawat.detail_rekam_medis.detail_rekam_medi.create', $rekam->idrekam_medis) }}" class="alert-link ms-2">
                                 Tambah detail
                             </a>
                         </div>

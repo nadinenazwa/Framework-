@@ -66,10 +66,10 @@
                                     <i class="bi bi-hash"></i> ID
                                 </th>
                                 <th class="col-2">
-                                    <i class="bi bi-paw"></i> Pasien (Hewan)
+                                    <i class="bi bi-paw"></i> Pasien (Hewan)<br><small>ID Pet</small>
                                 </th>
                                 <th class="col-2">
-                                    <i class="bi bi-person"></i> Pemilik
+                                    <i class="bi bi-person"></i> Pemilik<br><small>ID Pemilik</small>
                                 </th>
                                 <th class="col-1">
                                     <i class="bi bi-calendar-event"></i> Temu Dokter
@@ -90,16 +90,18 @@
                                 <tr>
                                     <td class="fw-bold">{{ $medis->idrekam_medis }}</td>
                                     <td>
-                                        <strong>{{ $medis->pet->nama_hewan ?? '-' }}</strong><br>
+                                        <strong>{{ $medis->temuDokter->pet->nama ?? '-' }}</strong><br>
                                         <small class="text-muted">
-                                            {{ $medis->pet->rasHewan->nama_ras ?? '-' }}
-                                        </small>
+                                            {{ $medis->temuDokter->pet->rasHewan->nama_ras ?? '-' }}
+                                        </small><br>
+                                        <span class="badge bg-secondary">idpet: {{ $medis->temuDokter->pet->idpet ?? '-' }}</span>
                                     </td>
                                     <td>
-                                        {{ $medis->pet->pemilik->nama_pemilik ?? '-' }}<br>
+                                        {{ $medis->temuDokter->pet->pemilik->user->nama ?? '-' }}<br>
                                         <small class="text-muted">
-                                            {{ $medis->pet->pemilik->user->email ?? '-' }}
-                                        </small>
+                                            {{ $medis->temuDokter->pet->pemilik->user->email ?? '-' }}
+                                        </small><br>
+                                        <span class="badge bg-secondary">idpemilik: {{ $medis->temuDokter->pet->pemilik->idpemilik ?? '-' }}</span>
                                     </td>
                                     <td>
                                         @if($medis->temuDokter)
@@ -111,7 +113,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {{ $medis->dokterPemeriksa->user->name ?? '-' }}
+                                        {{ $medis->dokterPemeriksa->user->nama ?? '-' }}
                                     </td>
                                     <td>
                                         <small>{{ Str::limit($medis->diagnosa, 50) }}</small>

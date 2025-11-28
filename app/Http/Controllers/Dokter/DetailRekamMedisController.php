@@ -36,7 +36,7 @@ class DetailRekamMedisController extends Controller
 
         // Get all treatment/therapy codes
         $tindakanTerapi = KodeTindakanTerapi::with('kategori', 'kategoriKlinis')
-            ->orderBy('nama_kategori', 'asc')
+            ->orderBy('deskripsi_tindakan_terapi', 'asc')
             ->get();
 
         return view('dokter.DetailRekamMedis.create', [
@@ -60,9 +60,9 @@ class DetailRekamMedisController extends Controller
             $validated['idrekam_medis'] = $rekamMedis->idrekam_medis;
 
             $detailRekamMedis = DetailRekamMedis::create($validated);
-
+            $rekamMedis->loadMissing('pet');
             return redirect()
-                ->route('dokter.rekam_medis.show', $rekamMedis->idrekam_medis)
+                ->route('dokter.rekam_medis.index', $rekamMedis->pet ? $rekamMedis->pet->idpet : null)
                 ->with('success', 'Detail rekam medis berhasil ditambahkan.');
         } catch (\Exception $e) {
             return redirect()
@@ -92,7 +92,7 @@ class DetailRekamMedisController extends Controller
 
         // Get all treatment/therapy codes
         $tindakanTerapi = KodeTindakanTerapi::with('kategori', 'kategoriKlinis')
-            ->orderBy('nama_kategori', 'asc')
+            ->orderBy('deskripsi_tindakan_terapi', 'asc')
             ->get();
 
         return view('dokter.DetailRekamMedis.edit', [
@@ -114,8 +114,9 @@ class DetailRekamMedisController extends Controller
         try {
             $detailRekamMedis->update($validated);
 
+            $detailRekamMedis->rekamMedis->loadMissing('pet');
             return redirect()
-                ->route('dokter.rekam_medis.show', $detailRekamMedis->rekamMedis->idrekam_medis)
+                ->route('dokter.rekam_medis.index', $detailRekamMedis->rekamMedis->pet ? $detailRekamMedis->rekamMedis->pet->idpet : null)
                 ->with('success', 'Detail rekam medis berhasil diperbarui.');
         } catch (\Exception $e) {
             return redirect()
@@ -129,13 +130,14 @@ class DetailRekamMedisController extends Controller
      */
     public function destroy(DetailRekamMedis $detailRekamMedis)
     {
-        $rekamMedisId = $detailRekamMedis->rekamMedis->idrekam_medis;
+        $detailRekamMedis->rekamMedis->loadMissing('pet');
+        $petId = $detailRekamMedis->rekamMedis->pet ? $detailRekamMedis->rekamMedis->pet->idpet : null;
 
         try {
             $detailRekamMedis->delete();
 
             return redirect()
-                ->route('dokter.rekam_medis.show', $rekamMedisId)
+                ->route('dokter.rekam_medis.index', $petId)
                 ->with('success', 'Detail rekam medis berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()

@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\PemilikController;
 use App\Http\Controllers\Admin\RasHewanController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\DokterController; 
+use App\Http\Controllers\Admin\PerawatController;
 use App\Http\Controllers\Admin\TemuDokterController as AdminTemuDokterController;
 use App\Http\Controllers\Admin\RekamMedisController as AdminRekamMedisController;
 use App\Http\Controllers\Resepsionis\DashboardResepsionisController;
@@ -63,9 +65,10 @@ Route::prefix('admin')->middleware(['auth', 'isAdministrator'])->name('admin.')-
     Route::resource('rashewan', RasHewanController::class);
     Route::resource('role', RoleController::class);
     Route::resource('user', UserController::class);
+    Route::resource('dokter', DokterController::class); 
+    Route::resource('perawat', PerawatController::class);
     Route::resource('pemilik', PemilikController::class);
     Route::resource('pet', PetController::class);
-     // Admin access to Temu Dokter and Rekam Medis (CRUD)
      Route::resource('temu-dokter', AdminTemuDokterController::class, ['parameters' => ['temu-dokter' => 'temuDokter']])->except(['show']);
      Route::resource('rekam-medis', AdminRekamMedisController::class, ['parameters' => ['rekam-medis' => 'rekamMedis']])->except(['show']);
 });
@@ -102,6 +105,11 @@ Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->grou
     Route::get('/pasien/{pet}/rekam-medis', [DashboardDokterController::class, 'showRekamMedis'])
          ->name('rekam_medis.index');
 
+    // Profil Dokter
+    Route::get('/profil', [\App\Http\Controllers\Dokter\ProfileDokterController::class, 'show'])->name('profil.show');
+     Route::get('/profil/edit', [\App\Http\Controllers\Dokter\ProfileDokterController::class, 'edit'])->name('profil.edit');
+     Route::put('/profil', [\App\Http\Controllers\Dokter\ProfileDokterController::class, 'update'])->name('profil.update');
+
     // Detail Rekam Medis CRUD
     Route::resource('detail-rekam-medis', DetailRekamMedisController::class)
          ->only(['index', 'show']);
@@ -126,6 +134,9 @@ Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->g
     Route::get('/dashboard', [DashboardPerawatController::class, 'index'])
          ->name('dashboard');
 
+    // Rute untuk Temu Dokter Hari Ini
+    Route::get('/temu-dokter/hari-ini', [\App\Http\Controllers\Perawat\TemuDokterController::class, 'hariIni'])->name('temu_dokter.hari_ini');
+
     // Rute untuk "Daftar Semua Temu Dokter"
     Route::get('/antrian', [AntrianController::class, 'index'])
          ->name('antrian.index');
@@ -139,8 +150,22 @@ Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->g
          ->name('pasien.show');
 
     // Rekam Medis CRUD
-    Route::resource('rekam-medis', RekamMedisController::class)
-         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+     Route::resource('rekam-medis', RekamMedisController::class, [
+          'parameters' => ['rekam-medis' => 'rekam_medis']
+     ])->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+
+    // Profil Perawat
+    Route::get('/profil', [\App\Http\Controllers\Perawat\ProfileController::class, 'show'])->name('profil.show');
+
+     // Detail Rekam Medis CRUD (khusus perawat)
+          Route::resource('detail_rekam_medis', \App\Http\Controllers\Dokter\DetailRekamMedisController::class, [
+               'as' => 'detail_rekam_medis'
+          ])->only(['index', 'show', 'edit', 'update', 'destroy', 'create', 'store']);
+
+          // Route khusus create detail rekam medis agar tidak error route not defined
+          Route::get('/rekam-medis/{rekamMedis}/detail/create', [
+              \App\Http\Controllers\Dokter\DetailRekamMedisController::class, 'create'])
+              ->name('perawat.detail_rekam_medis.create');
 }); 
 
 // Pemilik routes - Grouped with isPemilik middleware
@@ -155,4 +180,10 @@ Route::prefix('pemilik')->middleware(['auth', 'isPemilik'])->name('pemilik.')->g
     // Rute untuk melihat riwayat rekam medis satu pet
     Route::get('/pet/{pet}/rekam-medis', [DashboardPemilikController::class, 'showRekamMedis'])
          ->name('rekam_medis.show');
+
+    // Rute untuk halaman profil pemilik
+    Route::get('/profil', [DashboardPemilikController::class, 'profil'])->name('profil');
+
+    // Rute untuk edit profil pemilik
+    Route::get('/profil/edit', [DashboardPemilikController::class, 'editProfil'])->name('profil.edit');
 });

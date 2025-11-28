@@ -23,7 +23,7 @@ class RekamMedisController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        return view('perawat.RekamMedis.index', [
+        return view('perawat.rekam_medis.index', [
             'rekamMedis' => $rekamMedis,
         ]);
     }
@@ -52,7 +52,7 @@ class RekamMedisController extends Controller
             ->orderBy('waktu_daftar', 'desc')
             ->get();
 
-        return view('perawat.RekamMedis.create', [
+        return view('perawat.rekam_medis.create', [
             'pets' => $pets,
             'doctors' => $doctors,
             'appointments' => $appointments,
@@ -93,7 +93,7 @@ class RekamMedisController extends Controller
     {
         $rekamMedis->load(['pet.pemilik.user', 'temuDokter', 'dokterPemeriksa.user', 'detailRekamMedis.tindakanTerapi']);
 
-        return view('perawat.RekamMedis.show', [
+        return view('perawat.rekam_medis.show', [
             'rekamMedis' => $rekamMedis,
         ]);
     }
@@ -103,7 +103,13 @@ class RekamMedisController extends Controller
      */
     public function edit(RekamMedis $rekamMedis)
     {
-        $rekamMedis->load(['pet', 'temuDokter', 'dokterPemeriksa']);
+        $rekamMedis->load([
+            'pet.rasHewan.jenisHewan',
+            'pet.jenisHewan',
+            'pet.pemilik.user',
+            'temuDokter',
+            'dokterPemeriksa',
+        ]);
 
         // Get all pets
         $pets = Pet::with('pemilik.user', 'rasHewan.jenisHewan')
@@ -127,7 +133,7 @@ class RekamMedisController extends Controller
             ->orderBy('waktu_daftar', 'desc')
             ->get();
 
-        return view('perawat.RekamMedis.edit', [
+        return view('perawat.rekam_medis.edit', [
             'rekamMedis' => $rekamMedis,
             'pets' => $pets,
             'doctors' => $doctors,
@@ -141,12 +147,9 @@ class RekamMedisController extends Controller
     public function update(Request $request, RekamMedis $rekamMedis)
     {
         $validated = $request->validate([
-            'idpet' => 'required|exists:pet,idpet',
             'anamnesa' => 'required|string|max:1000',
             'temuan_klinis' => 'required|string|max:1000',
             'diagnosa' => 'required|string|max:1000',
-            'dokter_pemeriksa' => 'required|exists:role_user,idrole_user',
-            'idreservasi_dokter' => 'nullable|exists:temu_dokter,idreservasi_dokter',
         ]);
 
         try {

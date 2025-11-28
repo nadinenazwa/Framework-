@@ -61,4 +61,21 @@ class DashboardPemilikController extends Controller
             'riwayat' => $riwayatMedis
         ]);
     }
+
+    /**
+     * Menampilkan halaman profil pemilik.
+     */
+    public function profil()
+    {
+        return view('pemilik.profil');
+    }
+
+    /**
+     * Menampilkan halaman edit profil pemilik.
+     */
+    public function editProfil()
+    {
+        $pemilik = Auth::user()->pemilik;
+        return view('pemilik.edit_profil', compact('pemilik'));
+    }
 }

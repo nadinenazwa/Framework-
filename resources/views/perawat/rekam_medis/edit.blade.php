@@ -9,7 +9,7 @@
         <ol class="breadcrumb bg-light rounded px-3 py-2">
             <li class="breadcrumb-item"><a href="{{ route('perawat.dashboard') }}">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="{{ route('perawat.rekam-medis.index') }}">Rekam Medis</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('perawat.rekam-medis.show', $rekamMedis->idrekam_medis) }}">
+            <li class="breadcrumb-item"><a href="{{ route('perawat.rekam-medis.show', $rekamMedis) }}">
                 {{ $rekamMedis->pet->nama_hewan ?? '-' }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">Edit</li>
         </ol>
@@ -133,65 +133,7 @@
                     </div>
                 </div>
 
-                <!-- Doctor and Appointment -->
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="mb-3">
-                                <i class="bi bi-person-badge"></i> Dokter Pemeriksa
-                            </h6>
-                            <div class="mb-0">
-                                <label for="dokter_pemeriksa" class="form-label">
-                                    <span class="badge bg-danger">Wajib</span> Dokter
-                                </label>
-                                <select name="dokter_pemeriksa" id="dokter_pemeriksa" class="form-select @error('dokter_pemeriksa') is-invalid @enderror" required>
-                                    <option value="">-- Pilih Dokter --</option>
-                                    @foreach($doctors as $doctor)
-                                        <option value="{{ $doctor->idrole_user }}" 
-                                            @selected(old('dokter_pemeriksa', $rekamMedis->dokter_pemeriksa) == $doctor->idrole_user)>
-                                            {{ $doctor->user->name ?? '-' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('dokter_pemeriksa')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted d-block mt-2">
-                                    Dokter yang melakukan pemeriksaan
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <h6 class="mb-3">
-                                <i class="bi bi-calendar-event"></i> Jadwal Temu Dokter
-                            </h6>
-                            <div class="mb-0">
-                                <label for="idreservasi_dokter" class="form-label">
-                                    <span class="badge bg-danger">Wajib</span> Temu Dokter
-                                </label>
-                                <select name="idreservasi_dokter" id="idreservasi_dokter" class="form-select @error('idreservasi_dokter') is-invalid @enderror" required>
-                                    <option value="">-- Pilih Temu Dokter --</option>
-                                    @foreach($appointments as $appointment)
-                                        <option value="{{ $appointment->idtemu_dokter }}" 
-                                            @selected(old('idreservasi_dokter', $rekamMedis->idreservasi_dokter) == $appointment->idtemu_dokter)>
-                                            {{ date('d/m/Y H:i', strtotime($appointment->waktu_daftar)) }} - 
-                                            {{ $appointment->pet->nama_hewan ?? '-' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('idreservasi_dokter')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                                <small class="form-text text-muted d-block mt-2">
-                                    Jadwal temu dokter yang sudah di-booking
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- ...removed Dokter Pemeriksa and Jadwal Temu Dokter fields for perawat... -->
 
                 <!-- Form Actions -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">

@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Resepsionis;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Auth;
-// Kita tidak perlu 'use App\Models\TemuDokter;' lagi di sini
+use App\Models\Pemilik;
+use App\Models\Pet;
+use App\Models\TemuDokter;
 
 class DashboardResepsionisController extends Controller
 {
@@ -14,7 +17,9 @@ class DashboardResepsionisController extends Controller
      */
     public function index()
     {
-        // Sekarang controller ini HANYA menampilkan view dashboard
-        return view('resepsionis.dashboard');
+        $totalPemilik = Pemilik::count();
+        $totalPet = Pet::count();
+        $totalTemuDokter = TemuDokter::count();
+        return view('resepsionis.dashboard', compact('totalPemilik', 'totalPet', 'totalTemuDokter'));
     }
 }
