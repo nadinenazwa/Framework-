@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pemilik;
 use App\Http\Controllers\Controller;
 use App\Models\Pet;
 use App\Models\RekamMedis;
+use App\Models\TemuDokter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; // <-- Penting untuk otentikasi
 
@@ -23,9 +24,28 @@ class DashboardPemilikController extends Controller
         $pets = Pet::where('idpemilik', $pemilik->idpemilik)
                     ->with(['rasHewan.jenisHewan'])
                     ->get();
-            
+
+        // totals and recent items for dashboard cards
+        $totalPets = $pets->count();
+
+        $petIds = $pets->pluck('idpet')->toArray();
+
+        $upcomingAppointments = TemuDokter::with(['pet', 'roleUser.user'])
+            ->whereIn('idpet', $petIds)
+            ->orderBy('waktu_daftar', 'asc')
+            ->take(10)
+            ->get();
+
+        $recentRekams = RekamMedis::whereHas('temuDokter', function ($q) use ($petIds) {
+                $q->whereIn('idpet', $petIds);
+            })
+            ->with(['dokterPemeriksa.user', 'temuDokter.pet'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
         // 3. Tampilkan view dashboard pemilik
-        return view('pemilik.dashboard', compact('pets'));
+        return view('pemilik.dashboard', compact('pets', 'totalPets', 'upcomingAppointments', 'recentRekams'));
     }
 
     /**
@@ -56,9 +76,37 @@ class DashboardPemilikController extends Controller
         ->get();
         
         // 4. Tampilkan view
-        return view('pemilik.rekam_medis', [
+        return view('pemilik.rekam-medis.show', [
             'pasien' => $pet, // Kirim data pet sebagai 'pasien'
             'riwayat' => $riwayatMedis
+        ]);
+    }
+
+    /**
+     * Show a single Rekam Medis detail to the owner (ensure ownership)
+     */
+    public function showRekamMedisDetail($rekamMedisId)
+    {
+        $user = Auth::user();
+        $pemilik = $user->pemilik;
+        if (! $pemilik) {
+            abort(404, 'Pemilik tidak ditemukan');
+        }
+
+        $rekam = RekamMedis::with(['temuDokter.pet.rasHewan', 'detailRekamMedis.tindakanTerapi', 'dokterPemeriksa.user'])
+            ->where('idrekam_medis', $rekamMedisId)
+            ->firstOrFail();
+
+        // verify ownership: temuDokter -> pet -> idpemilik must match
+        $pet = $rekam->temuDokter ? $rekam->temuDokter->pet : null;
+        if (! $pet || $pet->idpemilik != $pemilik->idpemilik) {
+            abort(403, 'Akses Ditolak');
+        }
+
+        return view('pemilik.rekam-medis.show', [
+            'pasien' => $pet,
+            'riwayat' => collect([$rekam]),
+            'rekamMedis' => $rekam,
         ]);
     }
 
@@ -67,7 +115,7 @@ class DashboardPemilikController extends Controller
      */
     public function profil()
     {
-        return view('pemilik.profil');
+        return view('pemilik.profile.index');
     }
 
     /**
@@ -76,6 +124,6 @@ class DashboardPemilikController extends Controller
     public function editProfil()
     {
         $pemilik = Auth::user()->pemilik;
-        return view('pemilik.edit_profil', compact('pemilik'));
+        return view('pemilik.profile.edit', compact('pemilik'));
     }
 }

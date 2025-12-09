@@ -140,10 +140,12 @@ class PetResepsionisController extends Controller
     public function destroy(Pet $pet)
     {
         try {
+            $pet->deleted_by = auth()->id();
+            $pet->save();
             $pet->delete();
-            
+
             return redirect()->route('resepsionis.pet.index')
-                           ->with('success', 'Hewan peliharaan berhasil dihapus');
+                ->with('success', 'Hewan peliharaan berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menghapus hewan peliharaan: ' . $e->getMessage());
         }

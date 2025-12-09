@@ -30,7 +30,7 @@
                             <td>{{ optional(optional($rm->pet)->pemilik)->user?->nama ?? optional(optional(optional($rm->temuDokter)->pet)->pemilik)->user?->nama ?? '—' }}</td>
                             <td>{{ optional($rm->dokterPemeriksa->user)->nama ?? '—' }}</td>
                             <td>{{ Str::limit($rm->diagnosa, 80) }}</td>
-                            <td>{{ optional($rm->created_at)->format('Y-m-d') ?: optional(optional($rm->temuDokter)->waktu_daftar)->format('Y-m-d') ?: '—' }}</td>
+                            <td>{{ optional(optional($rm->temuDokter)->waktu_daftar)->format('Y-m-d') ?: '—' }}</td>
                             <td>
                                 <a href="{{ route('admin.rekam-medis.edit', $rm->idrekam_medis) }}" class="btn btn-sm btn-warning">Edit</a>
                                 <form action="{{ route('admin.rekam-medis.destroy', $rm->idrekam_medis) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Hapus rekam medis?')">

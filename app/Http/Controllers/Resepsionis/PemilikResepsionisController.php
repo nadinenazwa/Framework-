@@ -158,17 +158,12 @@ class PemilikResepsionisController extends Controller
     public function destroy(Pemilik $pemilik)
     {
         try {
-            // Store user ID for deletion after pemilik is deleted
-            $userId = $pemilik->iduser;
-            
-            // Delete pemilik
+            $pemilik->deleted_by = auth()->id();
+            $pemilik->save();
             $pemilik->delete();
-            
-            // Delete associated user
-            User::find($userId)?->delete();
-            
+
             return redirect()->route('resepsionis.pemilik.index')
-                           ->with('success', 'Pemilik berhasil dihapus');
+                ->with('success', 'Pemilik berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal menghapus pemilik: ' . $e->getMessage());
         }

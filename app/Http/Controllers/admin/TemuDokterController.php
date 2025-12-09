@@ -97,7 +97,10 @@ class TemuDokterController extends Controller
     public function destroy(TemuDokter $temuDokter)
     {
         try {
+            $temuDokter->deleted_by = auth()->id();
+            $temuDokter->save();
             $temuDokter->delete();
+
             return redirect()->route('admin.temu-dokter.index')->with('success', 'Reservasi berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus: ' . $e->getMessage());

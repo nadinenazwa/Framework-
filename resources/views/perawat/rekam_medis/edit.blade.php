@@ -4,13 +4,16 @@
 
 @section('content')
 <div class="container-fluid">
+    @php
+        $pet = $rekamMedis->pet ?? ($rekamMedis->temuDokter->pet ?? null);
+    @endphp
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-light rounded px-3 py-2">
             <li class="breadcrumb-item"><a href="{{ route('perawat.dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('perawat.rekam-medis.index') }}">Rekam Medis</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('perawat.antrian.index') }}">Daftar Temu Dokter</a></li>
             <li class="breadcrumb-item"><a href="{{ route('perawat.rekam-medis.show', $rekamMedis) }}">
-                {{ $rekamMedis->pet->nama_hewan ?? '-' }}</a></li>
+                {{ $pet->nama ?? '-' }}</a></li>
             <li class="breadcrumb-item active" aria-current="page">Edit</li>
         </ol>
     </nav>
@@ -53,6 +56,10 @@
                 @method('PUT')
 
                 <!-- Patient Information (Read-only) -->
+                @php
+                    $pet = $rekamMedis->pet ?? ($rekamMedis->temuDokter->pet ?? null);
+                    $owner = $pet?->pemilik ?? null;
+                @endphp
                 <div class="mb-4 p-3 border rounded bg-light">
                     <h6 class="mb-3">
                         <i class="bi bi-paw"></i> Informasi Pasien
@@ -61,21 +68,21 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Pasien (Hewan)</label>
                             <div class="form-control bg-white" readonly>
-                                <strong>{{ $rekamMedis->pet->nama_hewan ?? '-' }}</strong>
+                                <strong>{{ $pet->nama ?? '-' }}</strong>
                                 <br>
-                                <small class="text-muted">Jenis: {{ $rekamMedis->pet->jenisHewan->nama_jenis_hewan ?? '-' }}</small>
+                                <small class="text-muted">Jenis: {{ $pet->rasHewan->jenisHewan->nama_jenis_hewan ?? '-' }}</small>
                                 <br>
-                                <small class="text-muted">Ras: {{ $rekamMedis->pet->rasHewan->nama_ras ?? '-' }}</small>
+                                <small class="text-muted">Ras: {{ $pet->rasHewan->nama_ras ?? '-' }}</small>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Pemilik</label>
                             <div class="form-control bg-white" readonly>
-                                <strong>{{ $rekamMedis->pet->pemilik->nama_pemilik ?? '-' }}</strong>
+                                <strong>{{ $owner->user->nama ?? '-' }}</strong>
                                 <br>
-                                <small class="text-muted">No. HP: {{ $rekamMedis->pet->pemilik->no_hp ?? '-' }}</small>
+                                <small class="text-muted">No. HP: {{ $owner->no_wa ?? '-' }}</small>
                                 <br>
-                                <small class="text-muted">Email: {{ $rekamMedis->pet->pemilik->user->email ?? '-' }}</small>
+                                <small class="text-muted">Email: {{ $owner->user->email ?? '-' }}</small>
                             </div>
                         </div>
                     </div>
@@ -136,8 +143,8 @@
                 <!-- ...removed Dokter Pemeriksa and Jadwal Temu Dokter fields for perawat... -->
 
                 <!-- Form Actions -->
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                    <a href="{{ route('perawat.rekam-medis.show', $rekamMedis->idrekam_medis) }}" class="btn btn-secondary btn-lg">
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="{{ route('perawat.rekam-medis.show', $rekamMedis->idrekam_medis) }}" class="btn btn-secondary btn-lg me-2">
                         <i class="bi bi-arrow-left"></i> Batal
                     </a>
                     <button type="submit" class="btn btn-primary btn-lg">
@@ -145,6 +152,16 @@
                     </button>
                 </div>
             </form>
+
+            <div class="mt-3">
+                <form action="{{ route('perawat.rekam-medis.destroy', $rekamMedis->idrekam_medis) }}" method="POST" onsubmit="return confirm('Hapus rekam medis ini? Tindakan ini akan melakukan soft delete.');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Hapus Rekam (Soft Delete)
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

@@ -14,15 +14,15 @@ class DetailRekamMedisController extends Controller
     /**
      * Display a listing of detail medical records.
      */
-    public function index()
+    public function index($petId)
     {
-        // Get all detail medical records with relationships
-        $detailRekamMedis = DetailRekamMedis::with(['rekamMedis.pet', 'tindakanTerapi'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        // Fetch rekam medis using idreservasi_dokter to access pet data
+        $rekamMedis = RekamMedis::whereHas('temuDokter.pet', function ($query) use ($petId) {
+            $query->where('idpet', $petId);
+        })->with(['dokterPemeriksa', 'temuDokter.pet'])->get();
 
-        return view('dokter.DetailRekamMedis.index', [
-            'detailRekamMedis' => $detailRekamMedis,
+        return view('dokter.rekam_medis.index', [
+            'rekamMedis' => $rekamMedis,
         ]);
     }
 
@@ -32,14 +32,14 @@ class DetailRekamMedisController extends Controller
     public function create(RekamMedis $rekamMedis)
     {
         // Verify this is a medical record created by the current doctor
-        $rekamMedis->load('pet.pemilik.user', 'dokterPemeriksa.user', 'detailRekamMedis.tindakanTerapi');
+        $rekamMedis->load('temuDokter.pet.pemilik.user', 'dokterPemeriksa.user', 'detailRekamMedis.tindakanTerapi');
 
         // Get all treatment/therapy codes
         $tindakanTerapi = KodeTindakanTerapi::with('kategori', 'kategoriKlinis')
             ->orderBy('deskripsi_tindakan_terapi', 'asc')
             ->get();
 
-        return view('dokter.DetailRekamMedis.create', [
+        return view('dokter.detail_rekam_medis.create', [
             'rekamMedis' => $rekamMedis,
             'tindakanTerapi' => $tindakanTerapi,
         ]);
@@ -60,7 +60,16 @@ class DetailRekamMedisController extends Controller
             $validated['idrekam_medis'] = $rekamMedis->idrekam_medis;
 
             $detailRekamMedis = DetailRekamMedis::create($validated);
-            $rekamMedis->loadMissing('pet');
+            $rekamMedis->loadMissing('temuDokter.pet');
+            // After a Dokter adds a detail to the RekamMedis, mark the
+            // associated TemuDokter reservation as completed ('2').
+            try {
+                if ($rekamMedis->idreservasi_dokter) {
+                    $rekamMedis->temuDokter()->update(['status' => '2']);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('DetailRekamMedisController::store could not update TemuDokter status: ' . $e->getMessage(), ['idrekam_medis' => $rekamMedis->idrekam_medis]);
+            }
             return redirect()
                 ->route('dokter.rekam_medis.index', $rekamMedis->pet ? $rekamMedis->pet->idpet : null)
                 ->with('success', 'Detail rekam medis berhasil ditambahkan.');
@@ -76,9 +85,9 @@ class DetailRekamMedisController extends Controller
      */
     public function show(DetailRekamMedis $detailRekamMedis)
     {
-        $detailRekamMedis->load(['rekamMedis.pet.pemilik.user', 'rekamMedis.dokterPemeriksa.user', 'tindakanTerapi.kategori']);
+        $detailRekamMedis->load(['rekamMedis.temuDokter.pet.pemilik.user', 'rekamMedis.dokterPemeriksa.user', 'tindakanTerapi.kategori']);
 
-        return view('dokter.DetailRekamMedis.show', [
+        return view('dokter.detail_rekam_medis.show', [
             'detailRekamMedis' => $detailRekamMedis,
         ]);
     }
@@ -88,14 +97,14 @@ class DetailRekamMedisController extends Controller
      */
     public function edit(DetailRekamMedis $detailRekamMedis)
     {
-        $detailRekamMedis->load('rekamMedis.pet', 'tindakanTerapi');
+        $detailRekamMedis->load('rekamMedis.temuDokter.pet', 'tindakanTerapi');
 
         // Get all treatment/therapy codes
         $tindakanTerapi = KodeTindakanTerapi::with('kategori', 'kategoriKlinis')
             ->orderBy('deskripsi_tindakan_terapi', 'asc')
             ->get();
 
-        return view('dokter.DetailRekamMedis.edit', [
+        return view('dokter.detail_rekam_medis.edit', [
             'detailRekamMedis' => $detailRekamMedis,
             'tindakanTerapi' => $tindakanTerapi,
         ]);
@@ -114,7 +123,16 @@ class DetailRekamMedisController extends Controller
         try {
             $detailRekamMedis->update($validated);
 
-            $detailRekamMedis->rekamMedis->loadMissing('pet');
+            $detailRekamMedis->rekamMedis->loadMissing('temuDokter.pet');
+            // Ensure the related TemuDokter is marked completed after update.
+            try {
+                $parent = $detailRekamMedis->rekamMedis;
+                if ($parent && $parent->idreservasi_dokter) {
+                    $parent->temuDokter()->update(['status' => '2']);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('DetailRekamMedisController::update could not update TemuDokter status: ' . $e->getMessage(), ['iddetail' => $detailRekamMedis->iddetail_rekam_medis ?? null]);
+            }
             return redirect()
                 ->route('dokter.rekam_medis.index', $detailRekamMedis->rekamMedis->pet ? $detailRekamMedis->rekamMedis->pet->idpet : null)
                 ->with('success', 'Detail rekam medis berhasil diperbarui.');
@@ -130,19 +148,19 @@ class DetailRekamMedisController extends Controller
      */
     public function destroy(DetailRekamMedis $detailRekamMedis)
     {
-        $detailRekamMedis->rekamMedis->loadMissing('pet');
+        $detailRekamMedis->rekamMedis->loadMissing('temuDokter.pet');
         $petId = $detailRekamMedis->rekamMedis->pet ? $detailRekamMedis->rekamMedis->pet->idpet : null;
 
         try {
+            $detailRekamMedis->deleted_by = auth()->id();
+            $detailRekamMedis->save();
             $detailRekamMedis->delete();
 
             return redirect()
                 ->route('dokter.rekam_medis.index', $petId)
                 ->with('success', 'Detail rekam medis berhasil dihapus.');
         } catch (\Exception $e) {
-            return redirect()
-                ->back()
-                ->with('error', 'Terjadi kesalahan saat menghapus detail rekam medis: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus detail rekam medis: ' . $e->getMessage());
         }
     }
 }

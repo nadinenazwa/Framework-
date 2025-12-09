@@ -13,7 +13,7 @@ class RekamMedisController extends Controller
 {
     public function index()
     {
-        $rekamMedis = RekamMedis::with(['pet.pemilik.user', 'temuDokter', 'dokterPemeriksa.user'])
+        $rekamMedis = RekamMedis::with(['temuDokter.pet.pemilik.user', 'dokterPemeriksa.user'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -100,7 +100,16 @@ class RekamMedisController extends Controller
     public function destroy(RekamMedis $rekamMedis)
     {
         try {
-            $rekamMedis->detailRekamMedis()->delete();
+            // Soft-delete each detail and set deleted_by
+            foreach ($rekamMedis->detailRekamMedis()->get() as $detail) {
+                $detail->deleted_by = auth()->id();
+                $detail->save();
+                $detail->delete();
+            }
+
+            // Soft-delete rekam medis and set deleted_by
+            $rekamMedis->deleted_by = auth()->id();
+            $rekamMedis->save();
             $rekamMedis->delete();
 
             return redirect()->route('admin.rekam-medis.index')->with('success', 'Rekam medis berhasil dihapus.');

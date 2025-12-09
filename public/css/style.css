@@ -399,6 +399,96 @@ h2, h3 {
     vertical-align: top;
 }
 
+/* ===== AUTH (LOGIN / REGISTER) STYLING ===== */
+.auth-page { 
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 20px; /* space from top */
+    box-sizing: border-box;
+}
+
+.auth-page .form-container {
+    max-width: 720px;
+    width: 100%;
+    padding: 36px 40px;
+    background: rgba(255, 242, 246, 0.95); /* soft pink */
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(209,107,165,0.12);
+}
+
+.auth-page .form-group {
+    display: block; /* override global .form-group horizontal layout for auth pages */
+    margin-bottom: 14px;
+}
+
+.auth-page .error-text {
+    color: #c23b6f;
+    font-size: 0.9rem;
+    margin-top: 6px;
+}
+
+.auth-page h2.auth-title {
+    margin: 0 0 18px 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.auth-page label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #444;
+}
+
+.auth-page input[type="email"],
+.auth-page input[type="password"],
+.auth-page input[type="text"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cfcfcf;
+    border-radius: 6px;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+.auth-page .form-actions {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-top: 6px;
+}
+
+.auth-page .btn-primary {
+    background-color: #d16ba5;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.auth-page .btn-link {
+    background: none;
+    border: none;
+    color: #2a4bd6;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+
+.auth-page .remember-row {
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+@media (max-width: 576px) {
+    .auth-page .form-container { padding: 20px; }
+}
+
 .org-member img {
     width: 120px;
     height: 120px;
@@ -881,3 +971,84 @@ body {
 .footer-section i { margin-right: 8px; color: #d16ba5; }
 .social-media a { font-size: 1.5em; margin-right: 15px; }
 .footer-bottom { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #555; }
+
+/* Fix: constrain icon sizes inside pagination and pager links
+   Sometimes global icon rules (e.g. .icon or .service-card .icon)
+   can cascade and make pagination arrows huge. Ensure paginator
+   icons/rendered svgs use normal font-size here. */
+.pagination .page-link, .pagination .page-item a, .pagination .page-link svg, .pagination .page-link i {
+    font-size: 1rem !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+/* Also guard generic icon classes inside tables/cards */
+.table .bi, .card .bi, .container .bi {
+    font-size: 1rem !important;
+}
+
+/* More aggressive guard: force pagination/nav icons to reasonable sizes */
+.pagination, .pagination * {
+    font-size: 1rem !important;
+    line-height: 1 !important;
+}
+
+.pagination .page-link, .pagination .page-link * {
+    font-size: 1rem !important;
+    max-width: 2.25rem !important;
+    max-height: 2.25rem !important;
+    width: auto !important;
+    height: auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Ensure SVGs/icons inside pagination do not scale beyond control */
+.pagination svg, .pagination i {
+    width: 1.15rem !important;
+    height: 1.15rem !important;
+}
+
+/* Fallback: if an icon icon class is applied globally, reduce it inside main content areas */
+.main-content .bi, .content-wrapper .bi, .card .bi {
+    font-size: 1rem !important;
+}
+
+/* VERY SPECIFIC OVERRIDES FOR PAGINATION & NAV ICONS
+   These rules are intentionally specific and use !important to
+   defeat overly-broad icon/font-size rules elsewhere. */
+nav[role="navigation"], nav[aria-label="Pagination"], nav[aria-label="pagination"], .pagination {
+    font-size: 1rem !important;
+    line-height: 1 !important;
+}
+
+nav[role="navigation"] * , nav[aria-label="Pagination"] * , .pagination * {
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    transform: none !important;
+}
+
+.pagination .page-link, .pagination .page-item span.page-link, .pagination .page-item a.page-link {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: 2.2rem !important;
+    max-height: 2.2rem !important;
+    padding: .375rem .75rem !important;
+    font-size: 1rem !important;
+}
+
+.pagination svg, .pagination i, .pagination .bi {
+    width: 1rem !important;
+    height: 1rem !important;
+    font-size: 1rem !important;
+    transform: none !important;
+}
+
+/* If some rule applied scale via transform on pseudo elements, neutralize it */
+.pagination .page-link::before, .pagination .page-link::after {
+    transform: none !important;
+}

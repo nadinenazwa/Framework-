@@ -14,7 +14,13 @@ class AntrianController extends Controller
     public function index()
     {
         // Ambil SEMUA data temu_dokter, urutkan dari yang terbaru
-        $semuaKunjungan = TemuDokter::with(['pet.pemilik.user', 'roleUser.user'])
+        // Pastikan juga memuat relasi `rekamMedis` sehingga view dapat
+        // menentukan apakah tombol "Tambah Rekam" harus ditampilkan.
+        // Load rekamMedis (only non-deleted) so soft-deleted records are
+        // not shown in the UI.
+        $semuaKunjungan = TemuDokter::with(['pet.pemilik.user', 'roleUser.user', 'rekamMedis'])
+            // count soft-deleted rekam_medis so the UI can show an indicator
+            ->withCount(['rekamMedis as rekam_trashed_count' => function ($q) { $q->onlyTrashed(); }])
             ->orderBy('waktu_daftar', 'desc') // Tampilkan yang terbaru di atas
             ->get();
             

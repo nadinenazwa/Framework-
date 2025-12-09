@@ -28,6 +28,7 @@ use App\Http\Controllers\Perawat\AntrianController;
 use App\Http\Controllers\Perawat\PasienController;
 use App\Http\Controllers\Perawat\RekamMedisController;
 use App\Http\Controllers\Pemilik\DashboardPemilikController;
+use App\Http\Controllers\Pemilik\OwnerController;
 
 Route::get('/cek-koneksi', [SiteController::class, 'cekKoneksi'])->name('cek_koneksi');
 
@@ -93,6 +94,16 @@ Route::prefix('resepsionis')->middleware(['auth', 'isResepsionis'])->name('resep
     // Rute resource untuk Pet
     Route::resource('pet', PetResepsionisController::class)
          ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+
+     // New web resource routes for the controllers we created (non-API)
+     Route::resource('owners', \App\Http\Controllers\Resepsionis\OwnerController::class)->except(['show']);
+     Route::post('owners/{owner}/restore', [\App\Http\Controllers\Resepsionis\OwnerController::class, 'restore'])->name('owners.restore');
+
+     Route::resource('pets', \App\Http\Controllers\Resepsionis\PetController::class)->except(['show']);
+     Route::post('pets/{pet}/restore', [\App\Http\Controllers\Resepsionis\PetController::class, 'restore'])->name('pets.restore');
+
+     Route::resource('appointments', \App\Http\Controllers\Resepsionis\AppointmentController::class)->except(['show']);
+     Route::post('appointments/{appointment}/restore', [\App\Http\Controllers\Resepsionis\AppointmentController::class, 'restore'])->name('appointments.restore');
 });
 
 // Dokter routes - Grouped with isDokter middleware
@@ -102,8 +113,7 @@ Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->grou
 
     Route::get('/dashboard', [DashboardDokterController::class, 'index'])
          ->name('dashboard');
-    Route::get('/pasien/{pet}/rekam-medis', [DashboardDokterController::class, 'showRekamMedis'])
-         ->name('rekam_medis.index');
+    Route::get('/pasien/{petId}/rekam-medis', [DetailRekamMedisController::class, 'index'])->name('rekam_medis.index');
 
     // Profil Dokter
     Route::get('/profil', [\App\Http\Controllers\Dokter\ProfileDokterController::class, 'show'])->name('profil.show');
@@ -123,6 +133,30 @@ Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->grou
          ->name('detail_rekam_medis.update');
     Route::delete('/detail-rekam-medis/{detailRekamMedis}', [DetailRekamMedisController::class, 'destroy'])
          ->name('detail_rekam_medis.destroy');
+
+    // Rute untuk "Daftar Semua Pasien" (untuk melihat rekam medis)
+    Route::get('/pasien', [\App\Http\Controllers\Dokter\PasienController::class, 'index'])->name('pasien.index');
+
+    // Rute untuk "Detail Rekam Medis" per pasien
+    Route::get('/pasien/{pet}', [\App\Http\Controllers\Dokter\PasienController::class, 'show'])->name('pasien.show');
+
+    Route::get('/rekam-medis', [RekamMedisController::class, 'index'])->name('rekam-medis.index');
+
+    // Dokter-specific Rekam Medis listing (named `dokter.rekam_medis` used in dashboard)
+    Route::get('/rekam-medis', [\App\Http\Controllers\Dokter\RekamMedisController::class, 'index'])
+         ->name('rekam_medis');
+
+    // Dokter: rekam-medis edit/update/destroy routes (use Dokter\RekamMedisController)
+    Route::get('/rekam-medis/{rekamMedis}/edit', [\App\Http\Controllers\Dokter\RekamMedisController::class, 'edit'])
+         ->name('rekam_medis.edit');
+    Route::get('/rekam-medis/{rekamMedis}', [\App\Http\Controllers\Dokter\RekamMedisController::class, 'show'])
+         ->name('rekam_medis.show');
+    Route::put('/rekam-medis/{rekamMedis}', [\App\Http\Controllers\Dokter\RekamMedisController::class, 'update'])
+         ->name('rekam_medis.update');
+    Route::delete('/rekam-medis/{rekamMedis}', [\App\Http\Controllers\Dokter\RekamMedisController::class, 'destroy'])
+         ->name('rekam_medis.destroy');
+
+     // Use dedicated Dokter namespace controllers for pasien/rekam/detail/profile routes
 });
 
 // Perawat routes - Grouped with isPerawat middleware
@@ -156,17 +190,36 @@ Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->g
 
     // Profil Perawat
     Route::get('/profil', [\App\Http\Controllers\Perawat\ProfileController::class, 'show'])->name('profil.show');
+     Route::get('/profil/edit', [\App\Http\Controllers\Perawat\ProfileController::class, 'edit'])->name('profil.edit');
+     Route::put('/profil', [\App\Http\Controllers\Perawat\ProfileController::class, 'update'])->name('profil.update');
 
      // Detail Rekam Medis CRUD (khusus perawat)
-          Route::resource('detail_rekam_medis', \App\Http\Controllers\Dokter\DetailRekamMedisController::class, [
-               'as' => 'detail_rekam_medis'
-          ])->only(['index', 'show', 'edit', 'update', 'destroy', 'create', 'store']);
-
-          // Route khusus create detail rekam medis agar tidak error route not defined
-          Route::get('/rekam-medis/{rekamMedis}/detail/create', [
-              \App\Http\Controllers\Dokter\DetailRekamMedisController::class, 'create'])
-              ->name('perawat.detail_rekam_medis.create');
+     // Define resource routes and set explicit names so Blade calls like
+     // route('perawat.detail_rekam_medis.show', $id) resolve correctly.
+     // Detail Rekam Medis (Perawat): only allow viewing (index, show)
+     // Perawat should not create/edit/delete detail rekam medis.
+     Route::resource('detail_rekam_medis', \App\Http\Controllers\Dokter\DetailRekamMedisController::class)
+          ->only(['index', 'show'])
+          ->names([
+               'index' => 'detail_rekam_medis.index',
+               'show' => 'detail_rekam_medis.show',
+          ]);
 }); 
+
+// API-style routes for Resepsionis controllers (protected by auth + isResepsionis)
+Route::prefix('api/resepsionis')->middleware(['auth', 'isResepsionis'])->name('api.resepsionis.')->group(function () {
+     // CRUD for Owners (Pemilik)
+     Route::apiResource('owners', \App\Http\Controllers\Resepsionis\OwnerController::class)->except(['show']);
+     Route::post('owners/{owner}/restore', [\App\Http\Controllers\Resepsionis\OwnerController::class, 'restore'])->name('owners.restore');
+
+     // CRUD for Pets
+     Route::apiResource('pets', \App\Http\Controllers\Resepsionis\PetController::class)->except(['show']);
+     Route::post('pets/{pet}/restore', [\App\Http\Controllers\Resepsionis\PetController::class, 'restore'])->name('pets.restore');
+
+     // CRUD for Appointments (Temu Dokter)
+     Route::apiResource('appointments', \App\Http\Controllers\Resepsionis\AppointmentController::class)->except(['show']);
+     Route::post('appointments/{appointment}/restore', [\App\Http\Controllers\Resepsionis\AppointmentController::class, 'restore'])->name('appointments.restore');
+});
 
 // Pemilik routes - Grouped with isPemilik middleware
 Route::prefix('pemilik')->middleware(['auth', 'isPemilik'])->name('pemilik.')->group(function () {
@@ -181,8 +234,24 @@ Route::prefix('pemilik')->middleware(['auth', 'isPemilik'])->name('pemilik.')->g
     Route::get('/pet/{pet}/rekam-medis', [DashboardPemilikController::class, 'showRekamMedis'])
          ->name('rekam_medis.show');
 
+    // Rute untuk melihat detail satu rekam medis (pemilik)
+    Route::get('/rekam-medis/{rekamMedis}', [DashboardPemilikController::class, 'showRekamMedisDetail'])
+         ->name('rekam_medis.detail');
+
     // Rute untuk halaman profil pemilik
-    Route::get('/profil', [DashboardPemilikController::class, 'profil'])->name('profil');
+     // existing dashboard/profile routes (legacy)
+     Route::get('/profil', [DashboardPemilikController::class, 'profil'])->name('profil');
+     // Keep compatibility with existing Blade form route name `pemilik.profil.update`
+     Route::put('/profil', [OwnerController::class, 'updateProfile'])->name('profil.update');
+     // New owner-focused routes (English-friendly names)
+     Route::get('/profile', [OwnerController::class, 'profile'])->name('profile');
+     Route::put('/profile', [OwnerController::class, 'updateProfile'])->name('profile.update');
+
+     // Appointments for the logged-in owner
+     Route::get('/appointments', [OwnerController::class, 'appointments'])->name('appointments');
+
+     // Medical records overview for the owner
+     Route::get('/medical-records', [OwnerController::class, 'medicalRecords'])->name('medical_records');
 
     // Rute untuk edit profil pemilik
     Route::get('/profil/edit', [DashboardPemilikController::class, 'editProfil'])->name('profil.edit');

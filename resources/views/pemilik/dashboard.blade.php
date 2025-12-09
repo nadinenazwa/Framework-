@@ -4,65 +4,119 @@
 
 @section('content')
 <div class="container-fluid">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb bg-light rounded px-3 py-2">
-            <li class="breadcrumb-item"><a href="{{ route('pemilik.dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Daftar Pet</li>
-        </ol>
-    </nav>
-
-    <!-- Page Header -->
     <div class="row mb-4">
-        <div class="col-md-8">
-            <h2 class="mb-1">
-                <i class="bi bi-list"></i> Daftar Pet Anda
-            </h2>
-            <p class="text-muted">Kelola data pet yang Anda miliki</p>
+        <div class="col-md-4">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Pet</h5>
+                    <p class="card-text display-6">{{ $totalPets ?? ($pets->count() ?? 0) }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Upcoming Appointments</h5>
+                    <p class="card-text display-6">{{ optional($upcomingAppointments)->count() ?? 0 }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Medical Records</h5>
+                    <p class="card-text display-6">{{ optional($recentRekams)->count() ?? 0 }}</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Daftar Pet -->
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-table"></i> Data Pet
-            </h5>
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Upcoming Appointments</h3>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Pet</th>
+                                <th>Doctor</th>
+                                <th>Waktu Daftar</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($upcomingAppointments ?? [] as $a)
+                                <tr>
+                                    <td>{{ $a->idreservasi_dokter }}</td>
+                                    <td>{{ optional($a->pet)->nama ?? '-' }}</td>
+                                    <td>{{ optional(optional($a->roleUser)->user)->nama ?? '-' }}</td>
+                                    <td>{{ optional($a->waktu_daftar)->format('Y-m-d H:i') ?? '-' }}</td>
+                                    <td>
+                                        @php
+                                            $s = $a->status;
+                                            if ($s === 1 || $s === '1' || strtolower((string)$s) === 'pending') {
+                                                $label = 'pending';
+                                            } elseif ($s === 2 || $s === '2' || strtolower((string)$s) === 'selesai' || strtolower((string)$s) === 'finished') {
+                                                $label = 'selesai';
+                                            } else {
+                                                $label = (string)$s;
+                                            }
+                                        @endphp
+                                        {{ $label }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="text-center">No upcoming appointments</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Nama Pet</th>
-                            <th>Jenis Hewan</th>
-                            <th>Ras</th>
-                            <th>Jenis Kelamin</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($pets as $index => $pet)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $pet->nama }}</td>
-                            <td>{{ $pet->rasHewan->jenisHewan->nama_jenis_hewan ?? 'N/A' }}</td>
-                            <td>{{ $pet->rasHewan->nama_ras ?? 'N/A' }}</td>
-                            <td>{{ $pet->jenis_kelamin == 'J' ? 'Jantan' : 'Betina' }}</td>
-                            <td>
-                                <a href="{{ route('pemilik.rekam_medis.show', $pet->idpet) }}" class="btn btn-info btn-sm">
-                                    Lihat Rekam Medis
-                                </a>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-center">Anda belum mendaftarkan pet.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+
+        <div class="col-md-5">
+            <div class="card mb-3">
+                <div class="card-header"><h3 class="card-title">Your Pets</h3></div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>#</th><th>Name</th><th>Breed</th></tr></thead>
+                        <tbody>
+                            @forelse($pets as $idx => $p)
+                                <tr>
+                                    <td>{{ $idx + 1 }}</td>
+                                    <td>{{ $p->nama }}</td>
+                                    <td>{{ optional($p->rasHewan)->nama_ras ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="3" class="text-center">No pets</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Recent Medical Records</h3></div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>ID</th><th>Pet</th><th>Date</th></tr></thead>
+                        <tbody>
+                            @forelse($recentRekams ?? [] as $r)
+                                <tr>
+                                    <td>{{ $r->idrekam_medis }}</td>
+                                    <td>{{ optional(optional($r->temuDokter)->pet)->nama ?? '-' }}</td>
+                                    <td>{{ optional(optional($r->temuDokter)->waktu_daftar)->format('Y-m-d') ?? optional($r->created_at)->format('Y-m-d') ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="3" class="text-center">No records</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

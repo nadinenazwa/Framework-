@@ -9,6 +9,10 @@ use App\Models\Pemilik;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use illuminate\Support\Facades\DB;
+use App\Models\Dokter;
+use App\Models\Perawat;
+use App\Models\RekamMedis;
+use App\Models\TemuDokter;
 
 class DashboardController extends Controller
 {
@@ -19,6 +23,10 @@ class DashboardController extends Controller
         $totalPets = Pet::count();
         $totalOwners = Pemilik::count();
         $totalRoles = Role::count();
+        $totalDoctors = Dokter::count();
+        $totalNurses = Perawat::count();
+        $totalAppointments = TemuDokter::count();
+        $totalMedicalRecords = RekamMedis::count();
 
         // Recent users - order by iduser descending (latest added)
         $recentUsers = User::with('roles')
@@ -31,7 +39,11 @@ class DashboardController extends Controller
             'totalPets',
             'totalOwners',
             'totalRoles',
-            'recentUsers'
+            'recentUsers',
+            'totalDoctors',
+            'totalNurses',
+            'totalAppointments',
+            'totalMedicalRecords'
         ));
     }
 }

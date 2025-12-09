@@ -10,24 +10,22 @@
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-4 text-center">
-                            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&size=128" class="rounded-circle mb-3" alt="Foto Profil">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode($user->nama ?? '') }}&size=128" class="rounded-circle mb-3" alt="Foto Profil">
                         </div>
                         <div class="col-md-8">
                             <dl class="row">
                                 <dt class="col-sm-4">Nama</dt>
-                                <dd class="col-sm-8">{{ $user->name }}</dd>
+                                <dd class="col-sm-8">{{ $user->nama ?? '-' }}</dd>
                                 <dt class="col-sm-4">Email</dt>
                                 <dd class="col-sm-8">{{ $user->email }}</dd>
                                 <dt class="col-sm-4">No HP</dt>
-                                <dd class="col-sm-8">{{ $perawat->no_hp ?? '-' }}</dd>
+                                <dd class="col-sm-8">{{ $perawat->no_telp ?? $perawat->no_hp ?? '-' }}</dd>
                                 <dt class="col-sm-4">Alamat</dt>
                                 <dd class="col-sm-8">{{ $perawat->alamat ?? '-' }}</dd>
-                                <dt class="col-sm-4">Tanggal Lahir</dt>
-                                <dd class="col-sm-8">{{ $perawat->tanggal_lahir ?? '-' }}</dd>
                             </dl>
                         </div>
                     </div>
-                    <a href="#" class="btn btn-secondary">Edit Profil</a>
+                    <a href="{{ route('perawat.profil.edit') }}" class="btn btn-secondary">Edit Profil</a>
                 </div>
             </div>
         </div>

@@ -70,4 +70,24 @@ class DokterController extends Controller
 
         return redirect()->route('admin.dokter.index')->with('success', 'Data Dokter berhasil dihapus');
     }
+
+    public function viewDataPasien()
+    {
+        // Logic to fetch data pasien
+        $dataPasien = User::where('role', 'pasien')->get();
+        return view('dokter.data_pasien', compact('dataPasien'));
+    }
+
+    public function viewRekamMedis()
+    {
+        // Logic to fetch rekam medis
+        $rekamMedis = RekamMedis::with(['dokter', 'pasien'])->get();
+        return view('dokter.rekam_medis', compact('rekamMedis'));
+    }
+
+    public function crudDetailRekamMedis()
+    {
+        // Admin controller should not return dokter.* views. Use Dokter\DetailRekamMedisController for dokter role.
+        // This method intentionally left blank to avoid accidental view routing.
+    }
 }

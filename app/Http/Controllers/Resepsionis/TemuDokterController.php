@@ -53,11 +53,14 @@ class TemuDokterController extends Controller
             $maxNo = TemuDokter::whereDate('waktu_daftar', $today->toDateString())->max('no_urut');
             $nextNo = $maxNo ? $maxNo + 1 : 1;
 
+            // Always set new reservations created by Resepsionis to 'pending'
+            // (status code '1'). Ignore any incoming status value from the form
+            // to enforce the workflow requirement.
             $data = [
                 'idpet' => $validated['idpet'],
                 'idrole_user' => $validated['idrole_user'] ?? null,
                 'waktu_daftar' => $today,
-                'status' => $validated['status'] ?? '1',
+                'status' => '1',
                 'no_urut' => $nextNo,
             ];
 
@@ -127,7 +130,10 @@ class TemuDokterController extends Controller
     public function destroy(TemuDokter $temuDokter)
     {
         try {
+            $temuDokter->deleted_by = auth()->id();
+            $temuDokter->save();
             $temuDokter->delete();
+
             return redirect()->route('resepsionis.temu_dokter.index')
                 ->with('success', 'Reservasi berhasil dihapus.');
         } catch (\Exception $e) {

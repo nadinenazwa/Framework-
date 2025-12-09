@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DetailRekamMedis extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'detail_rekam_medis';
     protected $primaryKey = 'iddetail_rekam_medis';
@@ -17,7 +19,10 @@ class DetailRekamMedis extends Model
         'idrekam_medis',
         'idkode_tindakan_terapi',
         'detail',
+        'deleted_by',
     ];
+
+    public $dates = ['deleted_at'];
 
     /**
      * Get the rekam medis that owns the detail.

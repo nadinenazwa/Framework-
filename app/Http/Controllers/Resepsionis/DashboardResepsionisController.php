@@ -20,6 +20,11 @@ class DashboardResepsionisController extends Controller
         $totalPemilik = Pemilik::count();
         $totalPet = Pet::count();
         $totalTemuDokter = TemuDokter::count();
-        return view('resepsionis.dashboard', compact('totalPemilik', 'totalPet', 'totalTemuDokter'));
+        $recentAppointments = TemuDokter::with(['pet', 'roleUser.user.dokter'])->orderBy('waktu_daftar', 'desc')->take(10)->get();
+        // Models don't have `created_at` timestamps enabled, so avoid `latest()` which orders by that column.
+        // Order by primary key descending as a reasonable proxy for "recent" inserts.
+        $recentPets = Pet::orderBy('idpet', 'desc')->take(10)->get();
+        $recentOwners = Pemilik::orderBy('idpemilik', 'desc')->take(10)->get();
+        return view('resepsionis.dashboard', compact('totalPemilik', 'totalPet', 'totalTemuDokter', 'recentAppointments', 'recentPets', 'recentOwners'));
     }
 }

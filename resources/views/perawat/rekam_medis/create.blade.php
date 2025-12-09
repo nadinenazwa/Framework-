@@ -8,7 +8,7 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-light rounded px-3 py-2">
             <li class="breadcrumb-item"><a href="{{ route('perawat.dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('perawat.rekam-medis.index') }}">Rekam Medis</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('perawat.antrian.index') }}">Daftar Temu Dokter</a></li>
             <li class="breadcrumb-item active" aria-current="page">Tambah</li>
         </ol>
     </nav>
@@ -49,75 +49,50 @@
             <form action="{{ route('perawat.rekam-medis.store') }}" method="POST" id="rekamMedisForm">
                 @csrf
 
-                <!-- Patient Selection: Only patients with 'menunggu' appointment -->
-                <div class="mb-4 p-3 border rounded bg-light">
-                    <h6 class="mb-3">
-                        <i class="bi bi-paw"></i> Pilih Pasien (Hewan)
-                    </h6>
-                    <div class="mb-3">
-                        <label for="idpet" class="form-label">
-                            <span class="badge bg-danger">Wajib</span> Pasien (Hewan)
-                        </label>
-                        <select name="idpet" id="idpet" class="form-select @error('idpet') is-invalid @enderror" required>
-                            <option value="">-- Pilih Pasien --</option>
-                            @foreach($appointments as $appointment)
-                                <option value="{{ $appointment->pet->idpet }}"
-                                    data-appointment="{{ $appointment->idtemu_dokter }}"
-                                    data-pet="{{ $appointment->pet->nama_hewan ?? '-' }}"
-                                    data-ras="{{ $appointment->pet->rasHewan->nama_ras ?? '-' }}"
-                                    data-jenis="{{ $appointment->pet->jenisHewan->nama_jenis_hewan ?? '-' }}"
-                                    data-pemilik="{{ $appointment->pet->pemilik->nama_pemilik ?? '-' }}"
-                                    data-hp="{{ $appointment->pet->pemilik->no_hp ?? '-' }}"
-                                    data-email="{{ $appointment->pet->pemilik->user->email ?? '-' }}"
-                                    data-dokter="{{ $appointment->roleUser->user->name ?? '-' }}"
-                                    data-dokterid="{{ $appointment->roleUser->idrole_user ?? '' }}"
-                                    data-waktu="{{ date('d/m/Y H:i', strtotime($appointment->waktu_daftar)) }}">
-                                    {{ $appointment->pet->nama_hewan ?? '-' }} ({{ $appointment->pet->rasHewan->nama_ras ?? '-' }}) - {{ $appointment->pet->pemilik->nama_pemilik ?? '-' }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('idpet')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                        <small class="form-text text-muted d-block mt-2">
-                            Hanya pasien yang punya temu dokter status <b>menunggu</b> yang bisa dibuat rekam medis.
-                        </small>
+                <!-- Patient selection or readonly appointment -->
+                @if(isset($appointment))
+                    <div class="mb-4 p-3 border rounded bg-light">
+                        <h6 class="mb-3"><i class="bi bi-paw"></i> Pasien (dari Temu Dokter)</h6>
+                        <div>
+                            <strong>{{ $appointment->pet->nama ?? '-' }}</strong>
+                            <div class="text-muted">{{ $appointment->pet->rasHewan->nama_ras ?? '-' }} &bull; Pemilik: {{ optional($appointment->pet->pemilik->user)->nama ?? '-' }}</div>
+                        </div>
+                        {{-- Hidden submission fields --}}
+                        <input type="hidden" name="idpet" value="{{ $appointment->pet->idpet ?? '' }}">
+                        <input type="hidden" name="idreservasi_dokter" id="idreservasi_dokter_hidden" value="{{ $appointment->idreservasi_dokter ?? '' }}">
+                        <input type="hidden" name="dokter_pemeriksa" id="dokter_pemeriksa_hidden" value="{{ $appointment->roleUser->idrole_user ?? '' }}">
                     </div>
-                </div>
+                @else
+                    <div class="mb-4 p-3 border rounded bg-light">
+                        <h6 class="mb-3">
+                            <i class="bi bi-paw"></i> Pilih Pasien (Hewan)
+                        </h6>
+                        <div class="mb-3">
+                            <label for="idpet" class="form-label">
+                                <span class="badge bg-danger">Wajib</span> Pasien (Hewan)
+                            </label>
+                            <select name="idpet" id="idpet" class="form-select @error('idpet') is-invalid @enderror" required>
+                                <option value="">-- Pilih Pasien --</option>
+                                @foreach($appointments as $appointment)
+                                    @php $apptId = $appointment->idreservasi_dokter ?? $appointment->id ?? null; @endphp
+                                    <option value="{{ $appointment->pet->idpet }}" data-appointment="{{ $apptId }}" data-dokterid="{{ $appointment->roleUser->idrole_user ?? '' }}">
+                                        {{ $appointment->pet->nama ?? '-' }} ({{ $appointment->pet->rasHewan->nama_ras ?? '-' }}) - {{ $appointment->pet->pemilik->user->nama ?? '-' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('idpet')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                            <small class="form-text text-muted d-block mt-2">
+                                Hanya pasien yang punya temu dokter status <b>menunggu</b> yang bisa dibuat rekam medis.
+                            </small>
+                        </div>
+                    </div>
+                @endif
 
-                <!-- Auto-filled Info: Jadwal, Pasien, Pemilik, Dokter -->
-                <div class="mb-4 p-3 border rounded bg-light">
-                    <h6 class="mb-3">
-                        <i class="bi bi-info-circle"></i> Informasi Temu Dokter & Pasien (Otomatis)
-                    </h6>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Jadwal Temu Dokter</label>
-                            <input type="text" id="jadwal_temu" class="form-control bg-white" value="-" readonly>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Dokter Pemeriksa</label>
-                            <input type="text" id="dokter_pemeriksa_nama" class="form-control bg-white" value="-" readonly>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Pasien (Hewan)</label>
-                            <input type="text" id="nama_hewan" class="form-control bg-white" value="-" readonly>
-                            <small class="text-muted">Jenis: <span id="jenis_hewan">-</span></small><br>
-                            <small class="text-muted">Ras: <span id="ras_hewan">-</span></small>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Pemilik</label>
-                            <input type="text" id="nama_pemilik" class="form-control bg-white" value="-" readonly>
-                            <small class="text-muted">No. HP: <span id="hp_pemilik">-</span></small><br>
-                            <small class="text-muted">Email: <span id="email_pemilik">-</span></small>
-                        </div>
-                    </div>
-                    <!-- Hidden fields for submission -->
-                    <input type="hidden" name="idreservasi_dokter" id="idreservasi_dokter_hidden">
-                    <input type="hidden" name="dokter_pemeriksa" id="dokter_pemeriksa_hidden">
-                </div>
+                <!-- Hidden fields for submission (TemuDokter & Dokter) -->
+                <input type="hidden" name="idreservasi_dokter" id="idreservasi_dokter_hidden" value="{{ old('idreservasi_dokter') ?? $selectedTemu ?? '' }}">
+                <input type="hidden" name="dokter_pemeriksa" id="dokter_pemeriksa_hidden" value="{{ $preselectedDoctorId ?? '' }}">
 
                 <!-- Clinical Information -->
                 <div class="mb-4 p-3 border rounded bg-light">
@@ -175,7 +150,7 @@
 
                 <!-- Form Actions -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                    <a href="{{ route('perawat.rekam-medis.index') }}" class="btn btn-secondary btn-lg">
+                    <a href="{{ route('perawat.antrian.index') }}" class="btn btn-secondary btn-lg">
                         <i class="bi bi-arrow-left"></i> Batal
                     </a>
                     <button type="submit" class="btn btn-primary btn-lg">
@@ -193,30 +168,72 @@
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('rekamMedisForm');
         const pasienSelect = document.getElementById('idpet');
-        const jadwalTemu = document.getElementById('jadwal_temu');
-        const namaHewan = document.getElementById('nama_hewan');
-        const jenisHewan = document.getElementById('jenis_hewan');
-        const rasHewan = document.getElementById('ras_hewan');
-        const namaPemilik = document.getElementById('nama_pemilik');
-        const hpPemilik = document.getElementById('hp_pemilik');
-        const emailPemilik = document.getElementById('email_pemilik');
-        const dokterPemeriksaNama = document.getElementById('dokter_pemeriksa_nama');
         const idreservasiHidden = document.getElementById('idreservasi_dokter_hidden');
         const dokterPemeriksaHidden = document.getElementById('dokter_pemeriksa_hidden');
 
+        // If there's no select (we're creating from a single appointment), nothing to wire up.
+        if (!pasienSelect) {
+            // still ensure hidden fields exist (they are rendered server-side in that case)
+            // nothing more to do in JS
+        } else {
+
         pasienSelect.addEventListener('change', function() {
             const selected = pasienSelect.options[pasienSelect.selectedIndex];
-            jadwalTemu.value = selected.getAttribute('data-waktu') || '-';
-            namaHewan.value = selected.getAttribute('data-pet') || '-';
-            jenisHewan.textContent = selected.getAttribute('data-jenis') || '-';
-            rasHewan.textContent = selected.getAttribute('data-ras') || '-';
-            namaPemilik.value = selected.getAttribute('data-pemilik') || '-';
-            hpPemilik.textContent = selected.getAttribute('data-hp') || '-';
-            emailPemilik.textContent = selected.getAttribute('data-email') || '-';
-            dokterPemeriksaNama.value = selected.getAttribute('data-dokter') || '-';
             idreservasiHidden.value = selected.getAttribute('data-appointment') || '';
             dokterPemeriksaHidden.value = selected.getAttribute('data-dokterid') || '';
         });
+
+            // Trigger change on load if an option is preselected (from URL params)
+            if (pasienSelect.value) {
+                pasienSelect.dispatchEvent(new Event('change'));
+            }
+
+        // Fallback: if there's a temu_dokter_id in URL but no option selected,
+        // try to find option with matching data-appointment and select it client-side.
+            (function() {
+            const params = new URLSearchParams(window.location.search);
+            const temuId = params.get('temu_dokter_id') || params.get('idreservasi_dokter') || params.get('temu') || params.get('temu_dokter');
+            if (!temuId) return;
+
+            // if already has a selected option, nothing to do
+            const hasSelected = Array.from(pasienSelect.options).some(o => o.selected);
+                if (hasSelected) {
+                // if select already has selection, ensure hidden fields set when disabled
+                if (temuId && pasienSelect.disabled) {
+                    const opt = Array.from(pasienSelect.options).find(o => o.getAttribute('data-appointment') === temuId);
+                    if (opt) {
+                        // set hidden inputs
+                        idreservasiHidden.value = opt.getAttribute('data-appointment') || '';
+                        dokterPemeriksaHidden.value = opt.getAttribute('data-dokterid') || '';
+                        ensureHiddenIdpet(opt.value);
+                    }
+                }
+                return;
+            }
+
+            const option = Array.from(pasienSelect.options).find(o => o.getAttribute('data-appointment') === temuId);
+            if (option) {
+                option.selected = true;
+                pasienSelect.dispatchEvent(new Event('change'));
+                // disable select to prevent change
+                pasienSelect.setAttribute('disabled', '');
+                // set hidden inputs and ensure idpet hidden exists
+                idreservasiHidden.value = option.getAttribute('data-appointment') || '';
+                dokterPemeriksaHidden.value = option.getAttribute('data-dokterid') || '';
+                ensureHiddenIdpet(option.value);
+            }
+
+            function ensureHiddenIdpet(value) {
+                if (!document.querySelector('input[name="idpet"][type="hidden"]')) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'idpet';
+                    input.value = value;
+                    pasienSelect.parentNode.appendChild(input);
+                }
+            }
+            })();
+        }
 
         // Form validation
         form.addEventListener('submit', function(e) {

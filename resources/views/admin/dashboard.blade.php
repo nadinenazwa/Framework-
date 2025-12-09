@@ -22,7 +22,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title mb-2">Total Temu Dokter</h6>
-                                <h2 class="mb-0">{{ $totalTemuDokter ?? '-' }}</h2>
+                                <h2 class="mb-0">{{ $totalAppointments ?? '-' }}</h2>
                             </div>
                             <div style="font-size: 2.5rem; opacity: 0.3;">
                                 <i class="bi bi-calendar2-check-fill"></i>
@@ -41,7 +41,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h6 class="card-title mb-2">Total Rekam Medis</h6>
-                                <h2 class="mb-0">{{ $totalRekamMedis ?? '-' }}</h2>
+                                <h2 class="mb-0">{{ $totalMedicalRecords ?? '-' }}</h2>
                             </div>
                             <div style="font-size: 2.5rem; opacity: 0.3;">
                                 <i class="bi bi-file-medical-fill"></i>
@@ -50,6 +50,44 @@
                     </div>
                     <div class="card-footer bg-secondary bg-opacity-25">
                         <small><a href="{{ route('admin.rekam-medis.index') }}" class="text-white text-decoration-none">Kelola <i class="bi bi-arrow-right"></i></a></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-2">Total Dokter</h6>
+                                <h2 class="mb-0">{{ $totalDoctors ?? '-' }}</h2>
+                            </div>
+                            <div style="font-size: 2.5rem; opacity: 0.3;">
+                                <i class="bi bi-person-badge-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-primary bg-opacity-25">
+                        <small><a href="{{ route('admin.dokter.index') }}" class="text-white text-decoration-none">Kelola <i class="bi bi-arrow-right"></i></a></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="card-title mb-2">Total Perawat</h6>
+                                <h2 class="mb-0">{{ $totalNurses ?? '-' }}</h2>
+                            </div>
+                            <div style="font-size: 2.5rem; opacity: 0.3;">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-success bg-opacity-25">
+                        <small><a href="{{ route('admin.perawat.index') }}" class="text-white text-decoration-none">Kelola <i class="bi bi-arrow-right"></i></a></small>
                     </div>
                 </div>
             </div>

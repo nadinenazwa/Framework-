@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TemuDokter extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+    public $timestamps = false;
 
     /**
      * The table associated with the model.
@@ -43,6 +45,7 @@ class TemuDokter extends Model
      */
     protected $casts = [
         'waktu_daftar' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     /**

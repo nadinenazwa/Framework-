@@ -1,45 +1,49 @@
+@extends('layouts.lte.main')
 
-<h1>Riwayat Rekam Medis: {{ $pasien->nama }}</h1>
-<a href="{{ route('dokter.dashboard') }}">Kembali ke Dashboard</a>
-
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <a href="{{ route('dokter.rekam_medis.index', $pasien->idpet) }}" class="btn btn-link btn-sm">Kembali ke Detail Rekam Medis</a>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
-
-<hr>
-
-@forelse($riwayat as $rekam)
-    <div id="detail-rekam-medis" style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px;">
-        <h3>Kunjungan: {{ $rekam->created_at ? $rekam->created_at->format('d M Y') : $rekam->temuDokter->waktu_daftar->format('d M Y') }}</h3>
-        <p><strong>Dokter Pemeriksa:</strong> {{ $rekam->dokterPemeriksa->user->nama ?? 'N/A' }}</p>
-        <p><strong>Anamnesa:</strong> {{ $rekam->anamnesa }}</p>
-        <p><strong>Temuan Klinis:</strong> {{ $rekam->temuan_klinis }}</p>
-        <p><strong>Diagnosa:</strong> {{ $rekam->diagnosa }}</p>
-
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="mb-0">Detail Tindakan / Terapi:</h4>
-            <a href="{{ route('dokter.detail_rekam_medis.create', $rekam->idrekam_medis) }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle"></i> Tambah Detail
-            </a>
+@section('content')
+<div class="container">
+    <h1>Daftar Rekam Medis</h1>
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Pasien</th>
+                        <th>Dokter</th>
+                        <th>Status</th>
+                        <th>Diagnosa</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($rekamMedis as $rekam)
+                    <tr>
+                        <td>{{ $rekam->temuDokter->pet->nama ?? 'N/A' }}</td>
+                        <td>{{ $rekam->dokterPemeriksa->user->name ?? 'N/A' }}</td>
+                        <td>
+                            @php $status = optional($rekam->temuDokter)->status; @endphp
+                            @if($status == '1' || strtolower($status) === 'pending' || strtolower($status) === 'menunggu')
+                                <span class="badge bg-warning text-dark">Menunggu</span>
+                            @elseif($status == '2' || strtolower($status) === '2' || strtolower($status) === 'selesai' || strtolower($status) === 'completed')
+                                <span class="badge bg-success">Selesai</span>
+                            @else
+                                <span class="badge bg-danger">Batal</span>
+                            @endif
+                        </td>
+                        <td>{{ $rekam->diagnosa ?? 'N/A' }}</td>
+                        <td>
+                            {{ optional($rekam->temuDokter)->waktu_daftar ? $rekam->temuDokter->waktu_daftar->format('d-m-Y H:i') : 'N/A' }}
+                        </td>
+                        <td>
+                            <a href="{{ route('dokter.rekam_medis.show', $rekam->idrekam_medis) }}" class="btn btn-info btn-sm">Lihat</a>
+                            <a href="{{ route('dokter.detail_rekam_medis.create', ['rekamMedis' => $rekam->idrekam_medis]) }}" class="btn btn-primary btn-sm">Tambah Detail</a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-        <ul>
-            @foreach($rekam->detailRekamMedis as $detail)
-            <li>
-                <strong>{{ $detail->tindakanTerapi->deskripsi_tindakan_terapi ?? 'Tindakan' }}:</strong>
-                {{ $detail->detail }}
-                <a href="{{ route('dokter.detail_rekam_medis.edit', $detail->iddetail_rekam_medis) }}" class="btn btn-warning btn-sm">Edit</a>
-                <form action="{{ route('dokter.detail_rekam_medis.destroy', $detail->iddetail_rekam_medis) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Yakin ingin menghapus detail rekam medis ini?');">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
-                </form>
-            </li>
-            @endforeach
-        </ul>
     </div>
-@empty
-    <p>Belum ada riwayat rekam medis untuk pasien ini.</p>
-@endforelse
+</div>
+@endsection
