@@ -399,94 +399,239 @@ h2, h3 {
     vertical-align: top;
 }
 
-/* ===== AUTH (LOGIN / REGISTER) STYLING ===== */
-.auth-page { 
-    min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 48px 20px; /* space from top */
-    box-sizing: border-box;
-}
 
-.auth-page .form-container {
-    max-width: 720px;
-    width: 100%;
-    padding: 36px 40px;
-    background: rgba(255, 242, 246, 0.95); /* soft pink */
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(209,107,165,0.12);
-}
-
-.auth-page .form-group {
+.form-group {
     display: block; /* override global .form-group horizontal layout for auth pages */
     margin-bottom: 14px;
 }
 
-.auth-page .error-text {
+.error-text {
     color: #c23b6f;
     font-size: 0.9rem;
     margin-top: 6px;
 }
 
-.auth-page h2.auth-title {
-    margin: 0 0 18px 0;
-    font-size: 1.25rem;
-    color: #333;
-}
-
-.auth-page label {
+.form-container label {
     display: block;
     margin-bottom: 6px;
     font-weight: 600;
     color: #444;
 }
 
-.auth-page input[type="email"],
-.auth-page input[type="password"],
-.auth-page input[type="text"] {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #cfcfcf;
-    border-radius: 6px;
+/* ===== CONSOLIDATED AUTH / LOGIN FIXES ===== */
+/* This block ensures the login page is centered and responsive,
+   overriding duplicate/conflicting auth rules earlier in the file. */
+body.auth-page .main-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px 16px;
     box-sizing: border-box;
-    margin-bottom: 12px;
 }
 
-.auth-page .form-actions {
+body.auth-page .auth-card,
+body.auth-page .form-container {
+    margin: 0 auto;
+    width: 420px;
+    max-width: 96%;
+    box-sizing: border-box;
+}
+
+/* Center text/links inside the card */
+body.auth-page .auth-card { text-align: center; }
+body.auth-page .auth-card .auth-logo { margin: 0 auto 12px; }
+body.auth-page .auth-subtitle,
+body.auth-page .auth-links,
+body.auth-page .auth-footer { text-align: center; }
+
+/* Make input icons and fields comfortable on mobile */
+body.auth-page .input-icon { position: relative; }
+body.auth-page .input-icon i { left: 12px; top: 50%; transform: translateY(-50%); }
+body.auth-page .input-icon input { padding-left: 44px; }
+
+/* Remember row centered */
+body.auth-page .remember-row { display:flex; justify-content:center; margin:8px 0 12px; }
+
+/* Form inputs responsive sizing */
+body.auth-page .form-group input[type="email"],
+body.auth-page .form-group input[type="password"],
+body.auth-page .form-group input[type="text"] {
+    width: 100%;
+    max-width: 380px;
+}
+
+/* Primary button full width on small screens */
+@media (max-width: 520px) {
+    body.auth-page .auth-card,
+    body.auth-page .form-container { width: 96%; }
+    body.auth-page .btn-primary { width: 100%; }
+}
+
+
+.form-container input[type="email"],
+.form-container input[type="password"],
+.form-container input[type="text"] {
+    width: 100%;
+    height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    background: #fff;
+    transition: box-shadow .18s ease, border-color .18s ease, transform .08s ease;
+}
+
+.form-container input:focus {
+    outline: none;
+    border-color: #d16ba5;
+    box-shadow: 0 10px 30px rgba(209,107,165,0.10);
+    transform: translateY(-1px);
+}
+
+.form-actions {
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:12px;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
-.auth-page .btn-primary {
-    background-color: #d16ba5;
+.btn-primary {
+    /* Fun gradient button */
+    background: linear-gradient(90deg, #ff758c 0%, #ff7eb3 50%, #ffd27f 100%);
     color: #fff;
-    padding: 10px 16px;
-    border-radius: 8px;
+    padding: 12px 20px;
+    border-radius: 999px; /* pill */
     border: none;
     cursor: pointer;
+    font-weight: 800;
+    letter-spacing: .2px;
+    box-shadow: 0 8px 30px rgba(255,123,160,0.18), 0 2px 6px rgba(0,0,0,0.06);
+    transition: transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s ease;
 }
 
-.auth-page .btn-link {
+.btn-primary:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 20px 40px rgba(255,123,160,0.22); }
+.btn-primary:active { transform: translateY(-2px) scale(.98); }
+
+.btn-link {
     background: none;
     border: none;
-    color: #2a4bd6;
+    color: #6b3b6b;
     text-decoration: underline;
     cursor: pointer;
     padding: 0;
+    font-weight: 600;
 }
 
-.auth-page .remember-row {
-    display:flex;
-    align-items:center;
-    gap:8px;
+/* Ensure headings and description inside card are centered and nicely spaced */
+.auth-card .auth-title { text-align: center; font-size: 1.6rem; color: #d16ba5; margin-bottom: 6px; }
+.auth-card .auth-subtitle { text-align: center; color: #6b5a6b; margin-bottom: 12px; }
+.auth-card .auth-description { text-align: center; color: #5b4b5b; margin-bottom: 14px; }
+
+/* Tweak input presence inside the auth card for center alignment */
+.auth-card .form-group { text-align: center; }
+.auth-card .form-group input { margin: 0 auto; display: block; }
+
+/* FORCE: center all textual content inside auth card */
+.auth-card, .auth-card * {
+    text-align: center;
 }
+
+/* Keep input icons visually inside the input while inputs are centered */
+.auth-card .input-icon {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+}
+.auth-card .input-icon i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6f5b6f;
+}
+.auth-card .input-icon input {
+    padding-left: 44px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure form rows inside auth-card are single-column and centered */
+.auth-card .form-group {
+    display: block !important;
+    width: 100%;
+    max-width: 520px;
+    margin: 6px auto;
+    text-align: center;
+}
+.auth-card .form-group label {
+    display: none; /* we use placeholders and sr-only labels */
+}
+.auth-card .input-icon { width: 100%; max-width: 420px; margin: 6px auto; }
+
+/* Center paragraph/description and links explicitly */
+.auth-card .auth-subtitle,
+.auth-card .auth-description,
+.auth-card .auth-footer,
+.auth-card p {
+    text-align: center !important;
+}
+
+/* Make auth-links horizontal and centered */
+.auth-card .auth-links { display:flex; justify-content:center; gap:12px; flex-wrap:wrap; }
+.auth-card .auth-links a { display:inline-block; }
+
+
+/* Center remember row and links */
+.auth-card .remember-row { display:flex; justify-content:center; gap:8px; margin: 10px 0; }
+.auth-card .remember-row label { margin: 0; }
+.auth-card .auth-links { display:flex; justify-content:center; gap:12px; margin-top:12px; }
+.auth-card .auth-links a { display:inline-block; }
+
+/* Make primary buttons pink and more playful */
+.auth-card .btn-primary {
+    background: linear-gradient(90deg, #ff7ab6 0%, #ff5fa1 50%, #ff8fa8 100%);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-weight: 800;
+    letter-spacing: .4px;
+    box-shadow: 0 12px 30px rgba(255,95,160,0.18), 0 4px 8px rgba(0,0,0,0.06);
+    transition: transform .22s cubic-bezier(.2,.9,.3,1), box-shadow .18s ease, filter .12s ease;
+}
+.auth-card .btn-primary:hover {
+    transform: translateY(-8px) rotate(-1deg) scale(1.03);
+    box-shadow: 0 28px 50px rgba(255,95,160,0.20);
+    filter: saturate(1.05);
+}
+.auth-card .btn-primary:active {
+    transform: translateY(-2px) scale(.99);
+}
+
+/* Slightly larger input placeholders for readability */
+.auth-card .form-group input::placeholder { color: #b99aa9; opacity: 0.95; }
+
+/* Accessibility helper: sr-only if not present elsewhere */
+.sr-only { border: 0 !important; clip: rect(1px, 1px, 1px, 1px) !important; -webkit-clip-path: inset(50%) !important; clip-path: inset(50%) !important; height: 1px !important; margin: -1px !important; overflow: hidden !important; padding: 0 !important; position: absolute !important; width: 1px !important; white-space: nowrap !important; }
+
+
+/* Strong override: center all textual content inside auth card except form controls */
+.auth-card, .auth-card *:not(input):not(textarea):not(button):not(select):not(.input-icon i) {
+    text-align: center !important;
+}
+
+
+.remember-row { display:flex; align-items:center; gap:8px; }
+
+.btn-block { width: 100%; }
 
 @media (max-width: 576px) {
-    .auth-page .form-container { padding: 20px; }
+    .form-container { padding: 20px; }
 }
 
 .org-member img {
